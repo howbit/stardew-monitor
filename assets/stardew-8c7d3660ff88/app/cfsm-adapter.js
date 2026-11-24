@@ -41,7 +41,7 @@
     { test: /\blon\b|london|伦敦/i, loc: { city: '伦敦', timeZone: 'Europe/London', latitude: 51.5074, longitude: -0.1278 } },
   ];
 
-  const regionNames = new Intl.DisplayNames(['zh-CN'], {type:'region', fallback:'none'});
+  const regionNames = new Intl.DisplayNames([global.farmLocale || 'zh-CN'], {type:'region', fallback:'none'});
   const cityRegions = {'香港':'HK', '东京':'JP', '新加坡':'SG', '法兰克福':'DE', '洛杉矶':'US', '圣何塞':'US', '悉尼':'AU', '伦敦':'GB'};
 
   function placeText(value) {
@@ -149,11 +149,11 @@
     if (!enabled(config?.show_price)) return null;
     const raw = String(server.price ?? '').trim();
     if (!raw) return null;
-    if (Number(raw) === -1 || Number(raw) === 0) return '免费';
+    if (Number(raw) === -1 || Number(raw) === 0) return global.farmText?.('免费') || '免费';
     if (!Number.isFinite(Number(raw))) return raw;
     const cycles = {month:'月',quarter:'季',half_year:'半年',year:'年',two_years:'2年',three_years:'3年',four_years:'4年',five_years:'5年'};
     const cycle = cycles[server.billing_cycle] || server.billing_cycle;
-    return (server.currency || '') + raw + (cycle ? '/' + cycle : '');
+    return (server.currency || '') + raw + (cycle ? '/' + (global.farmText?.(cycle) || cycle) : '');
   }
 
   function routeSamples(series, key) {
@@ -217,7 +217,8 @@
   function loadBuildingOverrides() {
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.BUILDINGS);
-      return raw ? JSON.parse(raw) : {};
+      const entries = JSON.parse(raw || '{}');
+      return Object.fromEntries(Object.entries(entries).filter(([, id]) => BUILDINGS.includes(id)));
     } catch {
       return {};
     }
@@ -255,7 +256,7 @@
         const metadata = this.getMockServerDetail(node.id, node);
         const [rx,tx,cap] = node.trf;
         const used = parseTrafficLimitBytes(rx) + parseTrafficLimitBytes(tx);
-        return {...node, demo:true, os:metadata.os, arch:metadata.arch, cores:metadata.cores,
+        return {...node, building:this.buildingOverrides[node.id] || node.building, demo:true, os:metadata.os, arch:metadata.arch, cores:metadata.cores,
           ramCapacity:capacity(metadata.ramUsedMB,metadata.ramTotalMB), diskCapacity:capacity(metadata.diskUsedMB,metadata.diskTotalMB),
           tcp:metadata.tcpConn, udp:metadata.udpConn, expireDate:metadata.expireDate,
           price:metadata.price, trafficMode:'上下行合计', periodUsed:formatBytes(used),
@@ -346,12 +347,15 @@
     }
 
     setBuildingOverride(nodeId, building) {
-      this.buildingOverrides[nodeId] = building;
+      const found = this.currentNodes.find(n => (n.rawId || n.id) === nodeId) || this.currentNodes.find(n => n.id === nodeId);
+      if (!found || (building !== null && !BUILDINGS.includes(building))) return;
+      const key = found.rawId || found.id;
+      if (building === null) {
+        delete this.buildingOverrides[key];
+        delete this.buildingOverrides[found.id];
+      } else this.buildingOverrides[key] = building;
       saveBuildingOverrides(this.buildingOverrides);
-      const found = this.currentNodes.find(n => n.id === nodeId);
-      if (found) {
-        found.building = building;
-      }
+      found.building = building || (found.demo ? DEFAULT_NODES.find(n => n.id === key)?.building : null) || getStableBuildingForNode(key);
       this.notify();
     }
 
@@ -397,8 +401,8 @@
       const ip = v4 && v6 ? 'IPV4/6' : v4 ? 'IPV4' : v6 ? 'IPV6' : '';
       const rawId = String(server.id || '');
       const displayId = String(server.name || server.id || 'Node');
-      const building = this.buildingOverrides[displayId] ||
-        this.buildingOverrides[rawId] ||
+      const building = this.buildingOverrides[rawId] ||
+        this.buildingOverrides[displayId] ||
         getStableBuildingForNode(rawId || displayId, this.buildingOverrides);
 
       const cpu = metric(server.cpu);
@@ -784,7 +788,7 @@
           fetch(`${this.apiBase}/api/config`, { headers }).then(r => r.ok ? r.json() : null),
           fetch(`${this.apiBase}/api/servers`, { headers }).then(r => {
             if (r.status === 401 || r.status === 403) throw new Error('监控接口要求登录或访问验证。');
-            if (!r.ok) throw new Error('节点接口返回 HTTP ' + r.status + '。');
+            if (!r.ok) throw new Error(global.farmText ? global.farmText('节点接口返回 HTTP {code}。', {code:r.status}) : '节点接口返回 HTTP ' + r.status + '。');
             return r.json();
           })
         ]);

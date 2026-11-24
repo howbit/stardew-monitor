@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  const t = window.farmText || (key => key);
   const names = {clear:'晴', cloud:'多云', fog:'雾', rain:'雨', storm:'雷雨', snow:'雪', wind:'风'};
   const seasonal = {spring:['wind','clear','rain','clear'], summer:['clear','storm','clear','rain'],
     fall:['wind','clear','rain','wind'], winter:['snow','clear','snow','clear']};
@@ -72,14 +73,14 @@
       (manual ? '游戏天气' : '季节天气');
     document.body.dataset.weather = kind;
     document.body.dataset.weatherSource = source;
-    label.textContent = prefix + ' · ' + names[kind] + (hasSample ? (source === '最近天气' ? ' 缓存' : '') : ' 模拟');
+    label.textContent = [t(prefix), t(names[kind])].join(' · ') + (hasSample ? (source === '最近天气' ? ' '+t('缓存') : '') : ' '+t('模拟'));
     const celsius = hasSample ? sample.temperature : manual ? display.gameTemperature : null;
     temperature.textContent = Number.isFinite(celsius) ? Math.round(celsius) + '°C' : '—°C';
     if (hasSample) temperature.href = 'https://open-meteo.com/en/licence';
     else temperature.removeAttribute('href');
-    temperature.title = manual ? '季节场景的模拟气温' : hasSample ? source + '气温 · 天气数据来自 Open-Meteo' : '暂未取得当地气温';
+    temperature.title = manual ? t('季节场景的模拟气温') : hasSample ? t(source)+' '+t('气温 · 天气数据来自 Open-Meteo') : t('暂未取得当地气温');
     temperature.setAttribute('aria-label', temperature.textContent + '，' + temperature.title);
-    button.title = [city,display.origin,source,names[kind],temperature.textContent,hasSample ? 'Open-Meteo' : '',display.local ? '点击使用设备定位' : ''].filter(Boolean).join(' · ');
+    button.title = [city,display.origin,source,names[kind],temperature.textContent,hasSample ? 'Open-Meteo' : '',display.local ? '点击使用设备定位' : ''].filter(Boolean).map(key => t(key)).join(' · ');
     button.setAttribute('aria-label',button.title);
     button.parentElement.title = button.title;
     button.disabled = !display.local;

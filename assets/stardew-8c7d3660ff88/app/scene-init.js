@@ -26,5 +26,5 @@
   const season = demo?.[1] || (state.season === 'autumn' ? 'fall' : state.season);
   const night = demo ? demo[2] === 'night' : state.phase === 'night';
   window.estateStart = {visitor, season, night, demo: Boolean(demo)};
-  window.nodeFarmSprite = (id, windows = false) => '/assets/stardew-ed9b7e99a954/ui/estate/'+(windows ? 'windows/' : '')+encodeURIComponent(id)+'.png';
+  window.nodeFarmSprite = (id, windows = false) => '/assets/stardew-8c7d3660ff88/ui/estate/'+(windows ? 'windows/' : '')+encodeURIComponent(id)+'.png';
 })();

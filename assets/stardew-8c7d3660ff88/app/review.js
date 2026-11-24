@@ -41,14 +41,18 @@ if (typeof location !== 'undefined' && location.search) {
   if (qNight !== null) night = (qNight === 'true' || qNight === '1');
 }
 
+function nodeText(key, fields = {}) {
+  return window.farmText ? window.farmText(key, fields) : String(key ?? '').replace(/\{(\w+)\}/g, (m,k) => fields[k] ?? m);
+}
+
 function buildingMarkup(node){
   if (window.estateStart) {
     const base = `<img class="building-base" alt="" src="${window.nodeFarmSprite(node.building)}">`;
     return base + (node.online ? `<img class="window-light" alt="" src="${window.nodeFarmSprite(node.building,true)}">` : '');
   }
-  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-ed9b7e99a954/buildings3/${node.building}.png">`;
-  const base = `<img class="building-base" alt="" src="/assets/stardew-ed9b7e99a954/lights3/${node.building}-night.png">`;
-  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-ed9b7e99a954/lights3/${node.building}-light.png">` : '';
+  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-8c7d3660ff88/buildings3/${node.building}.png">`;
+  const base = `<img class="building-base" alt="" src="/assets/stardew-8c7d3660ff88/lights3/${node.building}-night.png">`;
+  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-8c7d3660ff88/lights3/${node.building}-light.png">` : '';
   return base + lights;
 }
 
@@ -91,7 +95,7 @@ function getNodeRegion(node) {
 function getNodeSubtitleParts(node) {
   const city = node.city || '未知';
   const region = {asia:'亚洲',americas:'美洲',europe:'欧洲'}[getNodeRegion(node)];
-  const place = [region, city].filter(value => value && value !== '—' && value !== 'N/A').join(' · ');
+  const place = [nodeText(region), nodeText(city)].filter(value => value && value !== '—' && value !== 'N/A').join(' · ');
   return [place, getNodeOSInfo(node).name].filter(value => value && value !== '—' && value !== 'N/A');
 }
 
@@ -101,10 +105,10 @@ function escapeText(value) {
 
 function elapsedText(ms) {
   const seconds = Math.max(0, Math.floor(ms / 1000));
-  if (seconds < 60) return seconds + '秒';
-  if (seconds < 3600) return Math.floor(seconds/60) + '分钟';
-  if (seconds < 86400) return Math.floor(seconds/3600) + '小时';
-  return Math.floor(seconds/86400) + '天';
+  if (seconds < 60) return nodeText('{n}秒', {n:seconds});
+  if (seconds < 3600) return nodeText('{n}分钟', {n:Math.floor(seconds/60)});
+  if (seconds < 86400) return nodeText('{n}小时', {n:Math.floor(seconds/3600)});
+  return nodeText('{n}天', {n:Math.floor(seconds/86400)});
 }
 
 function uptimeText(node) {
@@ -112,11 +116,11 @@ function uptimeText(node) {
     const end = node.online ? Date.now() : node.lastUpdated;
     return end >= node.bootTime ? elapsedText(end - node.bootTime) : '—';
   }
-  return node.days == null ? '—' : node.days + '天';
+  return node.days == null ? '—' : nodeText('{n}天', {n:node.days});
 }
 
 function reportText(stamp) {
-  return stamp ? elapsedText(Date.now() - stamp) + '前上报' : '';
+  return stamp ? nodeText('{age}前上报',{age:elapsedText(Date.now()-stamp)}) : '';
 }
 
 const chosenRoutes = new Map();
@@ -151,13 +155,13 @@ function systemBadge(node, detailUrl) {
   const os = node.os?.trim();
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
-  const src = file ? '/os-icons/'+file : '/assets/stardew-ed9b7e99a954/ui/lucide/hard-drive.svg';
-  return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="查看系统版本 '+escapeText(os)+'">'+
+  const src = file ? '/os-icons/'+file : '/assets/stardew-8c7d3660ff88/ui/lucide/hard-drive.svg';
+  return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="'+nodeText('查看系统版本')+' '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
 
 function metricIcon(name) {
-  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-ed9b7e99a954/ui/lucide/'+name+'.svg)"></i>';
+  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-8c7d3660ff88/ui/lucide/'+name+'.svg)"></i>';
 }
 
 function percentTrack(used, label) {
@@ -168,7 +172,7 @@ function percentTrack(used, label) {
 function renderResources(node) {
   const load = node.load;
   const readings = [
-    ['CPU','cpu',node.cpu,2,node.cores ? node.cores+' 核' : '—'],
+    ['CPU','cpu',node.cpu,2,node.cores ? nodeText('{n} 核',{n:node.cores}) : '—'],
     ['内存','memory-stick',node.ram,2,node.ramCapacity],
     ['磁盘','hard-drive',node.disk,1,node.diskCapacity],
     ['负载','gauge',load ? Number(load[0]) : null,2,load?.join(' / ')]
@@ -177,8 +181,8 @@ function renderResources(node) {
     const amount = node.online && Number.isFinite(value) ? value.toFixed(digits) : '—';
     const unit = amount !== '—' && icon !== 'gauge' ? '<small>%</small>' : '';
     const utilization = icon !== 'gauge' ? value : node.cores && value != null ? value/node.cores*100 : null;
-    const caption = icon === 'gauge' ? '1 / 5 / 15 分钟平均负载' : label;
-    return '<div class="resource-reading '+icon+'"><div class="reading-heading"><span>'+metricIcon(icon)+label+'</span><strong>'+amount+unit+'</strong></div>'+
+    const caption = nodeText(icon === 'gauge' ? '1 / 5 / 15 分钟平均负载' : label);
+    return '<div class="resource-reading '+icon+'"><div class="reading-heading"><span>'+metricIcon(icon)+nodeText(label)+'</span><strong>'+amount+unit+'</strong></div>'+
       '<div class="reading-detail" title="'+caption+'">'+escapeText(node.online ? detail || '—' : '—')+'</div>'+
       percentTrack(node.online ? utilization : null,caption)+'</div>';
   }).join('')+'</div>';
@@ -189,18 +193,18 @@ function renderTransfer(node, up, down) {
   const rates = [['上行','arrow-up',up,'本期出站',node.trf?.[1]],['下行','arrow-down',down,'本期入站',node.trf?.[0]]];
   const columns = rates.map(([label,icon,rate,totalLabel,total], i) => {
     const [number,unit] = rate.split(' ');
-    const spark = node.online ? trendChart(samples.map(([ts,pair]) => [ts,pair[i]]),label+'速率趋势') : '';
+    const spark = node.online ? trendChart(samples.map(([ts,pair]) => [ts,pair[i]]),nodeText(label)+' '+nodeText('速率趋势')) : '';
     const state = !node.online ? '离线' : number === '—' ? '暂无数据' : parseFloat(number) === 0 ? '空闲' : '实时';
-    return '<div class="transfer-direction '+icon+'"><div class="reading-heading"><span>'+metricIcon(icon)+label+'</span><strong>'+number+'<small>'+ (unit || '')+'</small></strong></div>'+
-      '<div class="rate-trend">'+(spark || '<i aria-hidden="true"></i>')+'<small>'+state+'</small></div>'+
-      '<div class="cycle-total"><span>'+metricIcon('globe')+totalLabel+'</span><b>'+escapeText(total)+'</b></div></div>';
+    return '<div class="transfer-direction '+icon+'"><div class="reading-heading"><span>'+metricIcon(icon)+nodeText(label)+'</span><strong>'+number+'<small>'+ (unit || '')+'</small></strong></div>'+
+      '<div class="rate-trend">'+(spark || '<i aria-hidden="true"></i>')+'<small>'+nodeText(state)+'</small></div>'+
+      '<div class="cycle-total"><span>'+metricIcon('globe')+nodeText(totalLabel)+'</span><b>'+escapeText(total)+'</b></div></div>';
   }).join('');
   const limit = node.unlimited ? '∞' : node.trf?.[2];
   let quota = '';
   if (node.trafficMode && (node.periodUsed !== '—' || (limit && limit !== '—'))) {
     const usage = escapeText(node.periodUsed)+(limit && limit !== '—' ? ' / '+escapeText(limit) : '');
-    quota = '<div class="quota-reading"><div class="reading-heading"><span>'+metricIcon('database')+'剩余流量 <b>'+escapeText(node.remaining)+'</b></span>'+
-      '<strong title="'+escapeText(node.trafficMode)+'">'+usage+'</strong></div>'+percentTrack(node.use,node.trafficMode)+'</div>';
+    quota = '<div class="quota-reading"><div class="reading-heading"><span>'+metricIcon('database')+nodeText('剩余流量')+' <b>'+escapeText(node.remaining)+'</b></span>'+
+      '<strong title="'+escapeText(nodeText(node.trafficMode))+'">'+usage+'</strong></div>'+percentTrack(node.use,nodeText(node.trafficMode))+'</div>';
   }
   return '<div class="transfer-grid">'+columns+'</div>'+quota;
 }
@@ -229,14 +233,14 @@ function renderProbeRows(node, charts, selected) {
   const hours = Number(window.cfsmAdapter?.siteConfig?.latency_window?.hours) || 2;
   return (node.ping || []).map(([label,latency], index) => {
     const data = node.routeData?.[label] || {};
-    const delay = node.online ? latency === null ? '超时' : latency+' ms' : '—';
+    const delay = node.online ? latency === null ? nodeText('超时') : latency+' ms' : '—';
     const loss = node.online && Number.isFinite(data.loss) ? data.loss.toFixed(1)+'%' : '—';
-    const name = escapeText(names[label] || label);
+    const name = escapeText(names[label] ? nodeText(names[label]) : label);
     const stamp = node.online ? node.lastUpdated : null;
     const html = '<span class="probe-latency"><span class="probe-value"><b>'+name+'</b><strong class="'+(node.online ? pingClass(latency) : '')+'">'+delay+'</strong></span>'+
       sampleStrip(data.points,stamp,latency,false,hours)+'</span><span class="probe-loss"><span class="probe-value"><strong class="'+(node.online && Number.isFinite(data.loss) ? data.loss >= 10 ? 'critical' : data.loss > 1 ? 'warning' : 'good' : '')+'">'+loss+'</strong></span>'+
       sampleStrip(data.lossPoints,stamp,data.loss,true,hours)+'</span>';
-    const a11y=' aria-label="'+name+'，延迟 '+delay+'，丢包率 '+loss+'"';
+    const a11y=' aria-label="'+name+' · '+nodeText('延迟')+' '+delay+' · '+nodeText('丢包率')+' '+loss+'"';
     return charts.has(label) ? '<button type="button" class="probe-row route-pill" data-route-index="'+index+'" aria-pressed="'+(selected===label)+'"'+a11y+'>'+html+'</button>'
       : '<div class="probe-row" role="group"'+a11y+'>'+html+'</div>';
   }).join('');
@@ -274,20 +278,29 @@ try {
 function billingMarkup(node) {
   return [['计费',node.price],['到期',node.expireDate]]
     .filter(([,value]) => value && value !== '—')
-    .map(([label,value]) => `<span>${label} <b>${escapeText(value)}</b></span>`).join('');
+    .map(([label,value]) => `<span>${nodeText(label)} <b>${escapeText(value)}</b></span>`).join('');
 }
 
 function renderNodeSummary(node, detailUrl) {
-  const status = node.online ? '在线' : '离线';
+  const status = nodeText(node.online ? '在线' : '离线');
   const metrics = [['CPU',node.cpu],['内存',node.ram],['磁盘',node.disk]].map(([label,percent]) => {
     const value = node.online && Number.isFinite(percent) ? percent : null;
     const level = value === null ? 'unknown' : value >= 90 ? 'high' : value >= 75 ? 'warn' : value >= 50 ? 'medium' : 'low';
-    return `<div class="summary-metric ${level}"><dt>${label}</dt><dd>${value === null ? '—' : Number(value.toFixed(1))+'%'}
+    return `<div class="summary-metric ${level}"><dt>${nodeText(label)}</dt><dd>${value === null ? '—' : Number(value.toFixed(1))+'%'}
       <span class="summary-track" aria-hidden="true"><i style="width:${Math.min(100,Math.max(0,value ?? 0))}%"></i></span></dd></div>`;
   }).join('');
   const [down,up] = node.net || [];
-  const speed = (label,rate) => `<div class="summary-metric"><dt>${label}</dt><dd>${escapeText(node.online ? rate : '—')}</dd></div>`;
-  const billing = billingMarkup(node);
+  const speed = (label,rate) => `<div class="summary-metric"><dt>${nodeText(label)}</dt><dd>${escapeText(node.online ? rate : '—')}</dd></div>`;
+  const billingParts = [];
+  if (node.price && node.price !== '—') billingParts.push('<span class="summary-price">'+nodeText('计费')+' '+escapeText(node.price)+'</span>');
+  if (node.expireDate && node.expireDate !== '—') {
+    const end = Date.parse(node.expireDate);
+    const days = Math.ceil((end - Date.now())/86400000);
+    const expiry = Number.isFinite(days) ? (days < 0 ? nodeText('已到期') : days === 0 ? nodeText('今天到期') : nodeText('{n}天后到期',{n:days})) : node.expireDate;
+    const tone = days < 0 ? 'expired' : days <= 7 ? 'soon' : '';
+    billingParts.push('<span class="summary-expiry '+tone+'" title="'+escapeText(node.expireDate)+'">'+escapeText(expiry)+'</span>');
+  }
+  const billing = billingParts.join('');
   const tags = [];
   function tag(kind, value) {
     if (value && value !== '—') tags.push(`<span class="summary-tag ${kind}">${escapeText(value)}</span>`);
@@ -299,11 +312,15 @@ function renderNodeSummary(node, detailUrl) {
     if (total && total !== '—') tag(kind,label+' '+total);
   }
   for (const label of node.tags || []) tag('custom',label);
-  if (node.trafficMode && node.remaining && node.remaining !== '—') tag('remaining','剩余 '+node.remaining);
+  if (node.trafficMode && node.remaining && node.remaining !== '—') tag('remaining',nodeText('剩余')+' '+node.remaining);
+  const region = node.location?.regionCode || ({'香港':'HK','洛杉矶':'US','圣何塞':'US','法兰克福':'DE','特罗姆瑟':'NO'})[node.city] || '';
+  const flag = /^[A-Z]{2}$/.test(region) ? '<span class="summary-country" title="'+escapeText(node.city || region)+'">'+
+    (window.cfsmAdapter?.isLive ? '<img src="/flags/'+region.toLowerCase()+'.svg" alt="'+region+'">' : region)+'</span>' : '';
+  const os = getNodeOSInfo(node).name;
   return `<header class="summary-head"><h3><span class="summary-status" role="img" aria-label="${status}" title="${status}"></span>
-    <a class="name" href="${detailUrl}">${escapeText(node.id)}</a><small>${escapeText(node.city || '')}</small></h3>
+    ${flag}<a class="name" href="${detailUrl}">${escapeText(node.id)}</a></h3>
     ${billing ? '<p class="node-billing">'+billing+'</p>' : ''}</header>
-    <dl class="summary-metrics"><div class="summary-metric"><dt>系统</dt><dd>${systemBadge(node,detailUrl) || '—'}</dd></div>
+    <dl class="summary-metrics"><div class="summary-metric"><dt>${nodeText('系统')}</dt><dd class="summary-os" title="${escapeText(os)}">${systemBadge(node,detailUrl)}<span>${escapeText(os)}</span></dd></div>
     ${metrics}${speed('上传',up)}${speed('下载',down)}</dl>
     ${tags.length ? '<div class="summary-tags">'+tags.join('')+'</div>' : ''}`;
 }
@@ -315,7 +332,7 @@ function bindNodeActions(card, node, warpHost) {
     warp.type = 'button';
     warp.className = 'farm-warp';
     warp.dataset.node = node.id;
-    warp.title = warp.ariaLabel = `查看${node.city || node.id}的农场 · ${node.id}`;
+    warp.title = warp.ariaLabel = nodeText('查看{city}的农场 · {id}',{city:nodeText(node.city) || node.id,id:node.id});
     const selected = window.estateSelectedNode?.() === node.id;
     warp.setAttribute('aria-pressed', String(selected));
     card.classList.toggle('scene-active', selected);
@@ -327,7 +344,7 @@ function bindNodeActions(card, node, warpHost) {
     if (warpHost.classList.contains('node-status-badge')) warpHost.querySelector('span').after(warp);
     else warpHost.append(warp);
   }
-  card.setAttribute('title', `点击查看 ${node.id} 详细运行规格与历史趋势`);
+  card.setAttribute('title', nodeText('点击查看 {id} 详细运行规格与历史趋势',{id:node.id}));
   card.addEventListener('click', event => {
     if (event.target.closest('button,a')) return;
     location.hash = '#/server/' + encodeURIComponent(node.rawId ?? node.id);
@@ -350,12 +367,12 @@ function render(){
     const empty = document.createElement('p');
     empty.className = 'empty-state';
     empty.setAttribute('role', 'status');
-    empty.textContent = '暂无监控节点。请在管理后台配置服务器探针。';
+    empty.textContent = nodeText('暂无监控节点。请在管理后台配置服务器探针。');
     const adapter = window.cfsmAdapter;
     if (adapter?.liveOnly && !adapter.isLive) {
       empty.textContent = adapter.lastError
-        ? '暂时无法读取节点。' + adapter.lastError.message
-        : '正在连接监控站点…';
+        ? nodeText('暂时无法读取节点。') + nodeText(adapter.lastError.message)
+        : nodeText('正在连接监控站点…');
     }
     cards.append(empty);
     return;
@@ -394,15 +411,15 @@ function render(){
     const expiry = Date.parse(node.expireDate);
     const until = Math.ceil((expiry - Date.now())/86400000);
     const expiryBadge = Number.isFinite(until) && until <= 7
-      ? '<span class="expiry-notice">'+ (until < 0 ? '已到期' : until ? until+'天后到期' : '今天到期')+'</span>' : '';
+      ? '<span class="expiry-notice">'+ (until < 0 ? nodeText('已到期') : until ? nodeText('{n}天后到期',{n:until}) : nodeText('今天到期'))+'</span>' : '';
     const report = node.lastUpdated ? '<small class="report-age" data-report="'+Number(node.lastUpdated)+'">'+reportText(node.lastUpdated)+'</small>' : '';
     const status = '<div class="node-status-badge '+(isOnline ? 'online' : 'offline')+'"><span><i class="status-dot"></i> '+
-      (isOnline ? '在线' : '离线')+'</span>'+(!menuCard && currentView === 'list' ? expiryBadge : '')+(menuCard ? '' : report)+'</div>';
+      nodeText(isOnline ? '在线' : '离线')+'</span>'+(!menuCard && currentView === 'list' ? expiryBadge : '')+(menuCard ? '' : report)+'</div>';
     const details = menuCard ? '' : '<a class="details-link" href="'+detailUrl+'">详情 ↗</a>';
     const ipTag = node.ip ? '<span class="ip-tag">'+escapeText(node.ip)+'</span>' : '';
     const billing = menuCard ? billingMarkup(node) : '';
     const title = menuCard
-      ? '<div class="node-identity"><div class="node-name-line"><h3><a class="name" href="'+detailUrl+'" title="查看节点详情"></a></h3>'+systemBadge(node,detailUrl)+ipTag+
+      ? '<div class="node-identity"><div class="node-name-line"><h3><a class="name" href="'+detailUrl+'" title="'+nodeText('查看节点详情')+'"></a></h3>'+systemBadge(node,detailUrl)+ipTag+
         '</div><div class="node-sub">'+subtitle+(node.remark ? '<span>'+escapeText(node.remark)+'</span>' : '')+
         report+'</div>'+(billing ? '<div class="node-billing">'+billing+'</div>' : '')+'</div>'
       : '<div class="node-identity"><h3 class="name"></h3><div class="node-sub">'+subtitle+'</div><div class="node-tags-row">'+ipTag+expiryBadge+'</div></div>';
@@ -413,9 +430,9 @@ function render(){
     const charts = new Map();
     for (const [label] of allRoutes) {
       const data = node.routeData?.[label];
-      const latency = trendChart(data?.points || [],label+' 延迟趋势');
-      const loss = trendChart(data?.lossPoints || [],label+' 丢包率趋势');
-      if (latency || loss) charts.set(label,(latency ? '<span>延迟 '+latency+'</span>' : '')+(loss ? '<span>丢包 '+loss+'</span>' : ''));
+      const latency = trendChart(data?.points || [],label+' '+nodeText('延迟趋势'));
+      const loss = trendChart(data?.lossPoints || [],label+' '+nodeText('丢包率趋势'));
+      if (latency || loss) charts.set(label,(latency ? '<span>'+nodeText('延迟')+' '+latency+'</span>' : '')+(loss ? '<span>'+nodeText('丢包')+' '+loss+'</span>' : ''));
     }
     const selected = chosenRoutes.get(node.id);
     const activeLabel = charts.has(selected) ? selected : menuCard ? undefined : charts.keys().next().value;
@@ -430,7 +447,7 @@ function render(){
     }).join('');
     const history = activeLabel === undefined ? '' : '<div class="route-summary">'+escapeText(activeLabel)+' '+charts.get(activeLabel)+'</div>';
     const footer = history || details ? '<div class="card-footer-row">'+history+details+'</div>' : '';
-    const routes = routePills ? '<div class="route-pings-bar">'+routePills+'</div>' : '<div class="route-no-data">线路延迟未上报</div>';
+    const routes = routePills ? '<div class="route-pings-bar">'+routePills+'</div>' : '<div class="route-no-data">'+nodeText('线路延迟未上报')+'</div>';
 
     if (currentView === 'list' && !menuCard) {
       const columns = [['CPU',node.cpu],['内存',node.ram],['磁盘',node.disk],['本期配额',node.use]].map(([k,v]) =>
@@ -441,9 +458,9 @@ function render(){
         '<div class="list-col"><small>↓ 下载</small><span>'+downNet+'</span></div><div class="list-col"><small>↑ 上传</small><span>'+upNet+'</span></div>';
     } else {
       const gauges = menuCard ? renderResources(node)
-        : '<div class="usage monitor-usage">'+renderSegmentedMeter('CPU',node.cpu,'cpu',isOnline,menuCard && node.cores ? node.cores+' 核' : '')+
+        : '<div class="usage monitor-usage">'+renderSegmentedMeter('CPU',node.cpu,'cpu',isOnline,menuCard && node.cores ? nodeText('{n} 核',{n:node.cores}) : '')+
           renderSegmentedMeter('内存',node.ram,'ram',isOnline,node.ramCapacity)+renderSegmentedMeter('磁盘',node.disk,'disk',isOnline,node.diskCapacity)+'</div>';
-      const header = '<div class="node-head"><button class="building building-picker" type="button" aria-label="切换节点建筑">'+
+      const header = '<div class="node-head"><button class="building building-picker" type="button" aria-label="'+nodeText('切换节点建筑')+'" title="'+nodeText('选择小屋')+'">'+
         buildingMarkup(node)+'</button>'+title+status+'</div>';
       card.innerHTML = menuCard ? header+'<div class="card-readings">'+gauges+renderTransfer(node,upNet,downNet)+
         '<div class="node-probes">'+routes+history+'</div></div>' : header+gauges+traffic+routes+footer;
@@ -467,8 +484,13 @@ function render(){
 
     const buildingBtn = card.querySelector('.building-picker');
     if (buildingBtn) {
+      buildingBtn.dataset.nodeId = node.rawId || node.id;
       buildingBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (menuCard && window.openHousePicker) {
+          window.openHousePicker(node, choices, buildingBtn);
+          return;
+        }
         const at = choices.indexOf(node.building);
         const nextBuilding = choices[(at + 1) % choices.length];
         node.building = nextBuilding;
@@ -486,7 +508,7 @@ function render(){
     const empty = document.createElement('p');
     empty.className = 'empty-state';
     empty.setAttribute('role', 'status');
-    empty.textContent = `没找到包含“${search ? search.value.trim() : ''}”的节点。`;
+    empty.textContent = nodeText('没找到包含“{q}”的节点。',{q:search?.value.trim() || ''});
     cards.append(empty);
   }
 }
@@ -517,7 +539,7 @@ window.setNightMode = function(isNight) {
   if (window.estateStart) {
     document.body.classList.toggle('night', night);
     viewModeBtn.setAttribute('aria-pressed', String(night));
-    const action = night ? '切换到白天' : '切换到夜晚';
+    const action = nodeText(night ? '切换到白天' : '切换到夜晚');
     viewModeBtn.title = action;
     viewModeBtn.setAttribute('aria-label', action);
     if (changed) render();

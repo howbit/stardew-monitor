@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const t = window.farmText || (key => key);
   const control = document.querySelector('.scene-music');
   const toggle = document.querySelector('#music-toggle');
   const current = document.querySelector('#music-current');
@@ -14,7 +15,7 @@
     ['fall-night', '秋夜', "Fall (Raven's Descent)"],
     ['winter-day', '冬日', 'Winter (The Wind Can Be Still)'],
     ['winter-night', '冬夜', 'Night Market']
-  ].map(([id, scene, title]) => [id, { scene, title, file: `/assets/stardew-ed9b7e99a954/music/${id}.ogg` }]));
+  ].map(([id, scene, title]) => [id, { scene, title, file: `/assets/stardew-8c7d3660ff88/music/${id}.ogg` }]));
   const storageKey = 'cfsm_scene_music_v1';
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(storageKey)) || {}; } catch {}
@@ -36,13 +37,13 @@
     onState({ status, desired, playing }) {
       // During loading the outgoing track is still audible; label the actual playing music.
       const track = tracks[status === 'loading' && playing ? playing : desired];
-      const suffix = { off: '配乐待播放', blocked: '点击继续播放', loading: playing ? `正在切换至${tracks[desired].scene}` : '正在载入', error: '加载失败，点击重试', playing: '正在播放' }[status];
-      current.textContent = track ? track.title : '随季节与昼夜切换';
+      const suffix = { off: '配乐待播放', blocked: '点击继续播放', loading: playing ? t('正在切换至{scene}',{scene:t(tracks[desired].scene)}) : '正在载入', error: '加载失败，点击重试', playing: '正在播放' }[status];
+      current.textContent = track ? track.title : t('随季节与昼夜切换');
       current.title = current.textContent;
-      if (statusLabel) statusLabel.textContent = `${track?.scene || '场景'} · ${suffix}`;
+      if (statusLabel) statusLabel.textContent = `${t(track?.scene || '场景')} · ${t(suffix)}`;
       const actionLabel = { off: '播放配乐', blocked: '继续播放', loading: '取消播放', error: '重试配乐', playing: '暂停配乐' }[status];
-      toggle.setAttribute('aria-label', actionLabel);
-      toggle.title = actionLabel;
+      toggle.setAttribute('aria-label', t(actionLabel));
+      toggle.title = t(actionLabel);
       toggle.setAttribute('aria-pressed', String(status === 'playing' || status === 'loading'));
       control.dataset.state = status;
       control.dataset.track = desired || '';

@@ -1,8 +1,0 @@
-/* Shared by the dashboard and the standalone node detail page. */
-body.landscape-preview,
-body.landscape-preview *,
-body.landscape-preview ::before,
-body.landscape-preview ::after,
-body.landscape-preview input::placeholder {
-  font-family: system-ui, "Microsoft YaHei", "PingFang SC", sans-serif !important;
-}

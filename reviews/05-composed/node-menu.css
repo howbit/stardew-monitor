@@ -152,6 +152,14 @@
 .rate-trend small {color:var(--quiet);font-size:10px;}
 .cycle-total {align-items:center;}
 .cycle-total b {font-size:12px;font-weight:550;}
+.card-connections {
+  grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:4px 12px;flex-wrap:wrap;
+  margin-top:6px;color:var(--quiet);font-size:12px;
+}
+.connection-values {display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;margin-inline-start:auto;}
+.connection-values span {white-space:nowrap;}
+.connection-values span + span {border-inline-start:1px solid var(--line);padding-inline-start:10px;}
+.connection-values b {color:var(--ink);font-weight:650;margin-inline-start:2px;}
 .card-readings .quota-reading {--tone:var(--green);}
 .quota-reading .reading-heading {margin-bottom:6px;}
 .quota-reading .reading-heading :is(b,strong) {font-size:12px;color:var(--quiet);font-weight:600;}

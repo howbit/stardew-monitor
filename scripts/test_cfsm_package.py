@@ -17,7 +17,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 SITE = 'https://monitor.test'
 NODE = {'id': 'probe-1', 'name': '测试探针', 'is_online': True, 'os': 'Debian',
-        'cpu': 12, 'cpu_cores': 2, 'ram_total': 4096, 'ram_used': 768}
+        'cpu': 12, 'cpu_cores': 2, 'ram_total': 4096, 'ram_used': 768, 'tcp_conn': 128, 'udp_conn': 0}
 
 
 def check_system_fonts(page, selectors):
@@ -147,6 +147,12 @@ def check(archive, browser):
     page.reload()
     expect(page.locator('.monitor-card .name')).to_have_text(NODE['name'])
     expect(page.locator('.system-badge img')).to_have_attribute('src', '/os-icons/os-debian.svg')
+    connections = page.locator('.monitor-card .transfer-grid > .card-connections:last-child')
+    expect(connections).to_have_text('连接数TCP 128UDP 0')
+    page.wait_for_function('window.cfsmAdapter.ws?.readyState === WebSocket.OPEN')
+    sockets[-1].send(json.dumps({'type':'batchUpdate', 'updates': [{'serverId':NODE['id'],
+        'samples':[{'data':{'tcp_conn':142, 'udp_conn':None}}]}]}))
+    expect(connections).to_have_text('连接数TCP 142UDP —')
     check_system_fonts(page, ['#music-current', '.region-tab', '.monitor-card .name', '.credit-link',
                               '.site-sign strong', '#season-time', '.time-sign-copy strong', '#farm-temperature'])
     assert not any('/ServerPage-' in path for path, _ in visits)
@@ -413,6 +419,7 @@ def check(archive, browser):
     expect(tabs).to_have_text(['全部','亚洲','美洲','欧洲','非洲','大洋洲','南极洲','未分区'])
     page.get_by_role('button', name='非洲', exact=True).click()
     expect(page.locator('#cards article .name')).to_have_text('ZA')
+    expect(page.locator('#cards .offline .card-connections')).to_have_count(0)
     for view in ('grid','list'):
         page.locator(f'.view-opt[data-view="{view}"]').click()
         expect(page.locator('#cards .offline .system-badge img')).to_have_css('filter','grayscale(1)')

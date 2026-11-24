@@ -216,6 +216,12 @@ function renderTransfer(node, up, down) {
       '<div class="rate-trend">'+(spark || '<i aria-hidden="true"></i>')+'<small>'+nodeText(state)+'</small></div>'+
       '<div class="cycle-total"><span>'+metricIcon('globe')+nodeText(totalLabel)+'</span><b>'+escapeText(total)+'</b></div></div>';
   }).join('');
+  let connections = '';
+  if (node.online && (Number.isFinite(node.tcp) || Number.isFinite(node.udp))) {
+    const counts = [['TCP', node.tcp], ['UDP', node.udp]].map(([protocol, count]) =>
+      '<span>'+protocol+' <b>'+(Number.isFinite(count) ? count.toLocaleString(window.farmLocale) : '—')+'</b></span>');
+    connections = '<div class="card-connections"><span>'+nodeText('连接数')+'</span><span class="connection-values">'+counts.join('')+'</span></div>';
+  }
   const limit = node.unlimited ? '∞' : node.trf?.[2];
   let quota = '';
   if (node.trafficMode && (node.periodUsed !== '—' || (limit && limit !== '—'))) {
@@ -223,7 +229,7 @@ function renderTransfer(node, up, down) {
     quota = '<div class="quota-reading"><div class="reading-heading"><span>'+metricIcon('database')+nodeText('剩余流量')+' <b>'+escapeText(node.remaining)+'</b></span>'+
       '<strong title="'+escapeText(nodeText(node.trafficMode))+'">'+usage+'</strong></div>'+percentTrack(node.use,nodeText(node.trafficMode))+'</div>';
   }
-  return '<div class="transfer-grid">'+columns+'</div>'+quota;
+  return '<div class="transfer-grid">'+columns+connections+'</div>'+quota;
 }
 
 function sampleStrip(points, stamp, value, loss, hours) {

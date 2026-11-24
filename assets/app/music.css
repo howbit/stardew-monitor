@@ -1,0 +1,21 @@
+/* Text, hairlines and standard pixel play/pause symbols; no player panel. */
+.scene-music{
+  position:absolute;z-index:4;top:25px;left:50%;transform:translateX(-50%);
+  width:min(390px,calc(100% - 540px));min-width:0;margin:0;padding:0;
+  border:0;border-radius:0;background:none;box-shadow:none;color:#173f42;
+  font:12px/1.45 system-ui,"Microsoft YaHei",sans-serif;text-align:center;
+}
+.music-track-copy{min-width:0}
+#music-status{display:block;font-size:10px;letter-spacing:.08em;margin-bottom:3px;opacity:.8}
+#music-current{display:block;font-size:14px;font-weight:650;line-height:1.4;overflow-wrap:anywhere}
+.music-actions{display:flex;align-items:center;justify-content:center;gap:9px;margin:2px auto 0;width:min(150px,100%)}
+.music-actions:before,.music-actions:after{content:"";height:1px;background:currentColor;opacity:.4;flex:1}
+#music-toggle{display:grid;place-items:center;flex:none;width:40px;height:36px;min-height:36px;padding:6px 8px;border:0;border-radius:0;background:none;box-shadow:none;color:inherit;cursor:pointer}
+.music-symbol{display:block;width:24px;height:24px;background:currentColor;mask:url("../ui/pixelarticons/play.svg?stardew_v=ad0115cfa1f6") center / contain no-repeat}
+#music-toggle[aria-pressed="true"] .music-symbol{mask-image:url("../ui/pixelarticons/pause.svg?stardew_v=ad0115cfa1f6")}
+#music-toggle:hover{color:#095563}
+#music-toggle:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.night .scene-music{color:#e5edee}
+.night #music-toggle:hover{color:#fff5c8}
+@media(max-width:900px){.scene-music{top:96px;width:min(390px,calc(100% - 32px))}}
+@media(prefers-reduced-motion:reduce){.scene-music *{transition:none}}

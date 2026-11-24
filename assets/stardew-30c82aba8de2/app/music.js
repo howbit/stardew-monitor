@@ -15,10 +15,13 @@
     ['fall-night', '秋夜', "Fall (Raven's Descent)"],
     ['winter-day', '冬日', 'Winter (The Wind Can Be Still)'],
     ['winter-night', '冬夜', 'Night Market']
-  ].map(([id, scene, title]) => [id, { scene, title, file: `/assets/stardew-cf07ea140e06/music/${id}.ogg` }]));
+  ].map(([id, scene, title]) => [id, { scene, title, file: `/assets/stardew-30c82aba8de2/music/${id}.ogg` }]));
   const storageKey = 'cfsm_scene_music_v1';
+  const positionKey = 'cfsm_scene_music_position_v1';
   let saved = {};
+  let resumePoint;
   try { saved = JSON.parse(localStorage.getItem(storageKey)) || {}; } catch {}
+  try { resumePoint = JSON.parse(sessionStorage.getItem(positionKey)); } catch {}
   let manuallyPaused = saved.enabled === false;
   // A fixed level prevents a hidden legacy volume preference from leaving music muted.
   const initialVolume = .4;
@@ -30,6 +33,7 @@
   }
   const player = new window.SceneMusicPlayer({
     tracks,
+    resumePoint,
     volume: initialVolume,
     fade: 3,
     createContext: () => new (window.AudioContext || window.webkitAudioContext)(),
@@ -41,7 +45,7 @@
     onState({ status, desired, playing }) {
       // During loading the outgoing track is still audible; label the actual playing music.
       const track = tracks[status === 'loading' && playing ? playing : desired];
-      const suffix = { off: manuallyPaused ? '已暂停' : '配乐待播放', blocked: '点击继续播放', loading: playing ? t('正在切换至{scene}',{scene:t(tracks[desired].scene)}) : '正在载入', error: '加载失败，点击重试', playing: '正在播放' }[status];
+      const suffix = { off: manuallyPaused ? '已暂停' : '配乐待播放', blocked: '轻点页面继续播放', loading: playing ? t('正在切换至{scene}',{scene:t(tracks[desired].scene)}) : '正在载入', error: '加载失败，点击重试', playing: '正在播放' }[status];
       current.textContent = track ? track.title : t('随季节与昼夜切换');
       current.title = current.textContent;
       if (statusLabel) statusLabel.textContent = `${t(track?.scene || '场景')} · ${t(suffix)}`;
@@ -69,8 +73,19 @@
   function unlock(event) {
     if (event.isTrusted && player.enabled && player.status === 'blocked' && !toggle.contains(event.target)) player.enable();
   }
+  document.addEventListener('pointerup', unlock, true);
   document.addEventListener('click', unlock, true);
   document.addEventListener('keydown', unlock, true);
+  function savePosition() {
+    const point = player.playbackPoint();
+    if (point) {
+      try { sessionStorage.setItem(positionKey, JSON.stringify(point)); } catch {}
+    }
+  }
+  window.addEventListener('pagehide', savePosition);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) savePosition();
+  });
   function restorePause() {
     try {
       if (JSON.parse(localStorage.getItem(storageKey))?.enabled === false && !manuallyPaused) {

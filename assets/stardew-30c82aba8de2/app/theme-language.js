@@ -48,7 +48,7 @@
     '季节场景的模拟气温':['In-game temperature','ゲーム内の気温'], '暂未取得当地气温':['Temperature unavailable','現地の気温は未取得'],
     '气温 · 天气数据来自 Open-Meteo':['temperature · Open-Meteo','気温 · Open-Meteo'], '设备所在地':['Device location','端末の現在地'], '设备定位':['Device location','端末の位置情報'],
     '网络所在地':['IP location','IP推定地点'], '网络估算':['IP estimate','IP推定'], '浏览器时区':['Browser time zone','ブラウザーのタイムゾーン'],
-    '场景配乐':['Farm music','農場の音楽'], '配乐待播放':['Music paused','再生待機中'], '点击继续播放':['Tap to play','押して再生'], '正在载入':['Loading','読み込み中'],
+    '场景配乐':['Farm music','農場の音楽'], '配乐待播放':['Music paused','再生待機中'], '轻点页面继续播放':['Tap the page to play','画面をタップして再生'], '正在载入':['Loading','読み込み中'],
     '加载失败，点击重试':['Could not load · retry','読み込み失敗・再試行'], '正在播放':['Now playing','再生中'], '播放配乐':['Play music','音楽を再生'],
     '继续播放':['Resume','再開'], '取消播放':['Cancel playback','再生をキャンセル'], '重试配乐':['Retry music','再試行'], '暂停配乐':['Pause music','一時停止'],
     '正在切换至{scene}':['Switching to {scene}','{scene}に切り替え中'], '场景':['Farm','農場'], '随季节与昼夜切换':['Seasonal soundtrack','季節と時間に合わせて再生'],

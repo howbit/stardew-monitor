@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   class SceneMusicPlayer {
-    constructor({ tracks, createContext, fetchAudio, onState = () => {}, volume = .4, fade = 3 }) {
+    constructor({ tracks, createContext, fetchAudio, onState = () => {}, volume = .4, fade = 3, resumePoint }) {
       Object.assign(this, { tracks, createContext, fetchAudio, onState, volume, fade });
       this.enabled = false;
       this.desired = null;
@@ -12,7 +12,8 @@
       this.voices = new Set();
       this.request = 0;
       this.status = 'off';
-      this.resumePoint = null;
+      this.resumePoint = resumePoint && Object.hasOwn(tracks, resumePoint.id)
+        && Number.isFinite(resumePoint.offset) && resumePoint.offset >= 0 ? resumePoint : null;
     }
     report(status) {
       this.status = status;
@@ -51,7 +52,7 @@
       this.enabled = false;
       ++this.request;
       if (this.active) {
-        this.resumePoint = { id: this.active.id, offset: this.position(this.active) };
+        this.resumePoint = this.playbackPoint();
         this.active = null;
       }
       for (const voice of this.voices) this.retire(voice, .18);
@@ -63,6 +64,10 @@
     }
     position(voice) {
       return (voice.offset + this.context.currentTime - voice.started) % voice.source.buffer.duration;
+    }
+    playbackPoint() {
+      if (!this.active) return this.resumePoint;
+      return { id: this.active.id, offset: this.position(this.active) };
     }
     ramp(voice, to, duration) {
       const now = this.context.currentTime;

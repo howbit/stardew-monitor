@@ -37,9 +37,9 @@ https://github.com/howbit/stardew-monitor/tree/dist
 
 `main` 存放源码和构建输入。推送到 `main` 或手动运行 **Build and publish theme** 后，GitHub Actions 会测试构建，并向 `dist` 追加提交。构建提交保留源码的提交说明和 SHA，产物目录直接使用 `assets/app`、`assets/landscape`、`assets/music`、`assets/stats` 和 `assets/ui`。
 
-用作 CF-Server-Monitor 自定义主题时，默认读取同站 API。独立部署时可通过 Actions Secrets 设置 `API_BASE`，以及可选的 `TITLE`、`BACKGROUND_IMAGE`、`CSP_API`、`CSP_STATIC`。跨域访问时，需在对应的 Worker 中把静态站点的 origin 加入 `CORS_ALLOWED_ORIGINS`。
+用作 CF-Server-Monitor 自定义主题时，默认读取同站 API。独立部署时可通过 Actions Secrets 设置一个 Worker 的 `API_BASE`，以及可选的 `TITLE`、`BACKGROUND_IMAGE`、`CSP_API`、`CSP_STATIC`。跨域访问时，需在对应的 Worker 中把静态站点的 origin 加入 `CORS_ALLOWED_ORIGINS`。
 
-如果要启用 GitHub Pages，可在仓库 **Settings → Pages** 选择 `dist` 分支的根目录。工作流需要 `contents: write` 权限才能追加构建提交。
+工作流使用 `contents: write` 向 `dist` 追加提交。CF-Server-Monitor 可直接读取 `dist`。如果还要托管到 GitHub Pages，可以在 **Settings → Pages** 选择 `dist` 的根目录。通过 Actions 的 `GITHUB_TOKEN` 推送的提交不会触发 Pages 的分支部署，持续自动更新 Pages 需要单独的 Pages 部署工作流。[GitHub Pages 发布说明](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 
 农场场景已作为静态构建输入保存。若要重新合成场景，需先在本地准备 `游戏源文件/Content (unpacked)`，再运行 `python scripts/compose_spring_estate.py`。
 

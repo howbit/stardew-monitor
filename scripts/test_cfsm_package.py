@@ -427,13 +427,20 @@ def check(archive, browser):
     for width in (320,390,1440):
         page.set_viewport_size({'width':width, 'height':844})
         controls = page.locator('.heading-right')
+        if width == 1440:
+            expect(page.locator('.region-tabs')).to_have_css('height', '44px')
         scene = controls.locator('#scene-label').bounding_box()
         season = controls.locator('#season-preview').bounding_box()
         tools = controls.locator('.node-toolbar').bounding_box()
+        regions = page.locator('.region-tabs').bounding_box()
+        assert abs(season['height'] - tools['height']) < 1, (width, season, tools)
         if width == 1440:
             assert scene['x'] < season['x'] < tools['x']
+            assert max(regions['y'], season['y'], tools['y']) - min(regions['y'], season['y'], tools['y']) < 1, (regions, season, tools)
+            assert abs(season['height'] - regions['height']) < 1
         else:
             assert season['y'] + season['height'] <= tools['y'] + 1
+            assert tabs.first.bounding_box()['height'] >= 44
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
     nodes.clear()
     page.reload()

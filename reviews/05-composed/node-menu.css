@@ -250,16 +250,20 @@
 }
 .content-heading {
   --tool-size:36px;--glyph-size:22px;--tool-surface:#fff8eb;--tool-line:#c9b792;
+  --tool-frame-padding:3px;--tool-frame-border:1px;
+  --tool-frame-height:calc(var(--tool-size) + 2 * (var(--tool-frame-padding) + var(--tool-frame-border)));
   --icon:#685849;--selected:#315d43;--tool-active:#dfebd9;--tool-hover:#ede7d8;
 }
 .night .content-heading {
   --tool-surface:#1c2a3b;--tool-line:#46576a;--icon:#c6d4e2;
   --selected:#b8ebc6;--tool-active:#294738;--tool-hover:#2e3f51;
 }
-.heading-right .node-toolbar,.heading-left .region-tabs {
-  box-sizing:border-box;padding:3px;border:1px solid var(--tool-line);border-radius:8px;
+.heading-right .node-toolbar,.heading-left .region-tabs,.heading-right .scene-controls select {
+  box-sizing:border-box;min-height:var(--tool-frame-height);
+  border:var(--tool-frame-border) solid var(--tool-line);border-radius:8px;
   background:var(--tool-surface);
 }
+.heading-right .node-toolbar,.heading-left .region-tabs {padding:var(--tool-frame-padding);}
 .heading-right .node-toolbar {
   flex-wrap:wrap;
   display:inline-flex;align-items:center;gap:2px;min-width:0;max-width:100%;height:auto;
@@ -272,6 +276,7 @@
 .heading-left .region-tab {
   min-height:var(--tool-size);padding:2px 12px;border:0;border-radius:5px;
   color:var(--icon);background:transparent;box-shadow:none;line-height:1.2;
+  transition:background-color .15s ease,color .15s ease;
 }
 .heading-left .region-tab:is(:hover,:focus-visible) {background:var(--tool-hover);color:var(--selected);}
 .heading-left .region-tab.active {background:var(--selected);color:var(--tool-surface);box-shadow:none;}
@@ -281,8 +286,11 @@
   color:var(--icon);border:0;border-radius:0;background:transparent;font-size:12px;
 }
 .heading-right .scene-controls select,.heading-right #return-local {
-  height:var(--tool-size);border:1px solid var(--tool-line);border-radius:6px;background:var(--tool-surface);
   color:var(--icon);box-shadow:none;font-size:12px;
+}
+.heading-right .scene-controls select {height:var(--tool-frame-height);line-height:normal;}
+.heading-right #return-local {
+  height:var(--tool-size);border:1px solid var(--tool-line);border-radius:6px;background:var(--tool-surface);
 }
 .heading-right .scene-controls :is(select,button):focus-visible {outline:2px solid var(--selected);outline-offset:1px;}
 .heading-right .node-tool {

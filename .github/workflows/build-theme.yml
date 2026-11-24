@@ -1,0 +1,52 @@
+name: Build and publish theme
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stardew-monitor-dist
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: howbit/CF-Server-Monitor
+          ref: 1e4931fbebb8dc82f113cd2da80b962fab646a3b
+          path: tools/cfsm-howbit
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/cfsm-howbit/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --prefix tools/cfsm-howbit
+      - run: python -m pip install Pillow playwright
+      - run: python -m playwright install --with-deps chromium
+      - run: node scripts/build_native_detail.mjs
+      - run: python scripts/package_cfsm_theme.py
+      - run: python scripts/test_cfsm_package.py
+      - run: python scripts/package_cfsm_theme.py
+        env:
+          API_BASE: ${{ secrets.API_BASE }}
+          TITLE: ${{ secrets.TITLE }}
+          BACKGROUND_IMAGE: ${{ secrets.BACKGROUND_IMAGE }}
+          CSP_API: ${{ secrets.CSP_API }}
+          CSP_STATIC: ${{ secrets.CSP_STATIC }}
+      - name: Publish a new dist commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          python scripts/publish_dist.py release/stardew-monitor.zip "https://github.com/$GITHUB_REPOSITORY.git" --source HEAD

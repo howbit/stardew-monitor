@@ -8,16 +8,18 @@
 
 准备一个已部署的 CF-Server-Monitor 站点，并使用管理员账号登录。还没有站点的话，可以先看上游的部署说明。[CF-Server-Monitor 项目](https://github.com/huilang-me/CF-Server-Monitor)
 
-**自定义主题 URL（已测试的固定版本）**
+**自定义主题 URL**
 
 ```text
-https://github.com/howbit/stardew-monitor/tree/298c90074fed3d037c10ee7f6d7b578df4633f43
+https://github.com/howbit/stardew-monitor/tree/dist
 ```
 
 1. 打开自己站点的管理后台，进入 **主题商店**。
 2. 将上面一整行地址复制到 **自定义主题 URL**，点击 **预览**。
 3. 在预览页查看自己的节点，再点开一个节点名称，确认详情和监控数据正常显示。
 4. 喜欢这个效果，就回到主题商店，点击 **应用自定义**。访客此时会在首页看到农场主题。以后想切回去，在同一处点击 **使用内置主题** 即可。
+
+如果希望固定使用某次构建，可以在 `dist` 的提交记录里选一个提交，把地址中的 `dist` 换成该提交的完整 SHA。选择固定版本后，后续构建不会自动切换已安装的主题。
 
 ### 开启实况天气
 
@@ -30,6 +32,16 @@ https://github.com/howbit/stardew-monitor/tree/298c90074fed3d037c10ee7f6d7b578df
    ```
 
 4. 点击 **保存配置**，刷新首页，将季节选为 **自动（天时联动）**。有可用坐标时，把鼠标移到右上角天气图标上，提示中出现 **实况** 和 **Open-Meteo** 就表示已取到天气数据。手动选择季节时，天气牌显示 **模拟**，方便预览当季场景。
+
+## 源码与自动构建
+
+`main` 存放源码和构建输入。推送到 `main` 或手动运行 **Build and publish theme** 后，GitHub Actions 会测试构建，并向 `dist` 追加提交。构建提交保留源码的提交说明和 SHA，产物目录直接使用 `assets/app`、`assets/landscape`、`assets/music`、`assets/stats` 和 `assets/ui`。
+
+用作 CF-Server-Monitor 自定义主题时，默认读取同站 API。独立部署时可通过 Actions Secrets 设置 `API_BASE`，以及可选的 `TITLE`、`BACKGROUND_IMAGE`、`CSP_API`、`CSP_STATIC`。跨域访问时，需在对应的 Worker 中把静态站点的 origin 加入 `CORS_ALLOWED_ORIGINS`。
+
+如果要启用 GitHub Pages，可在仓库 **Settings → Pages** 选择 `dist` 分支的根目录。工作流需要 `contents: write` 权限才能追加构建提交。
+
+农场场景已作为静态构建输入保存。若要重新合成场景，需先在本地准备 `游戏源文件/Content (unpacked)`，再运行 `python scripts/compose_spring_estate.py`。
 
 ## 白天和夜晚
 

@@ -1,0 +1,62 @@
+.farm-detail.landscape-preview {
+  color-scheme:light;
+  --bg-primary:var(--farm-page);
+  --bg-secondary:var(--farm-paper);
+  --bg-card:var(--farm-paper);
+  --bg-card-solid:var(--farm-paper);
+  --bg-hover:var(--farm-inset);
+  --bg-hover-solid:var(--farm-inset);
+  --input-bg:var(--farm-inset);
+  --border-color:var(--farm-line);
+  --input-border:var(--farm-trim);
+  --border-active:var(--farm-trim);
+  --text-primary:var(--farm-ink);
+  --text-muted:var(--farm-muted);
+  --text-secondary:var(--farm-muted);
+  --accent-green:var(--farm-green);
+  --accent-blue:var(--farm-blue);
+  --accent-yellow:var(--farm-amber);
+  --accent-red:var(--farm-red);
+  --accent-purple:var(--farm-purple);
+  --accent-pink:#92466e;
+  --accent-cyan:#356d73;
+  --color-inherit:var(--farm-paper);
+}
+.farm-detail.night {color-scheme:dark;--accent-pink:#efb4d1;--accent-cyan:#93d4d6;}
+.farm-detail::before {display:none;}
+.farm-detail :is(.terminal-header,.nav-bar,.host-card,.chart-card,.footer) {
+  border-radius:5px;background:var(--farm-paper);
+}
+.farm-detail :is(.host-card-header,.chart-card-header) {background:var(--farm-inset);}
+.farm-detail :is(.host-name,.chart-title,.chart-current-value,.terminal-title) {text-shadow:none;}
+.farm-detail :is(.sysinfo-label,.chart-subtitle) {color:var(--farm-muted);}
+.farm-detail .sysinfo-label {letter-spacing:normal;}
+.farm-detail .terminal-header {
+  display:grid;grid-template-columns:1fr minmax(0,2fr) 1fr;align-items:center;gap:.5rem;
+}
+.farm-detail .terminal-dots {width:auto;}
+.farm-detail .terminal-title {display:block;text-align:center;overflow-wrap:anywhere;}
+.farm-detail .admin-link-header {justify-self:end;}
+.farm-detail .nav-bar {
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:.6rem;
+}
+.farm-detail .time-selector {justify-self:start;max-width:100%;flex-wrap:wrap;}
+.farm-detail .back-btn {grid-column:2;justify-self:end;align-self:start;white-space:nowrap;}
+.farm-detail .ping-node-1 {color:var(--farm-red);}
+.farm-detail .ping-node-2 {color:var(--farm-blue);}
+.farm-detail .ping-node-3 {color:var(--farm-green);}
+.farm-detail .ping-node-4 {color:var(--farm-amber);}
+.farm-detail :is(a,button,select):focus-visible {outline:2px solid var(--farm-green);outline-offset:1px;}
+.detail-message, .history-note { padding: 1rem; }
+.history-note { color: var(--text-muted); }
+.charts-container > *, .sysinfo-grid > * { min-width: 0; }
+.sysinfo-value { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .farm-detail .sysinfo-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .farm-detail .sysinfo-wide {grid-column:1 / -1;}
+  .farm-detail .sysinfo-value {overflow-wrap:normal;}
+  .farm-detail .sysinfo-small {overflow-wrap:anywhere;}
+  .farm-detail .measure {display:inline-block;white-space:nowrap;}
+  .charts-container { grid-template-columns: minmax(0, 1fr); }
+  .host-name { min-width: 0; overflow-wrap: anywhere; }
+}

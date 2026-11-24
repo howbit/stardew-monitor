@@ -1,0 +1,6 @@
+__pycache__/
+reviews/05-composed/native-built/
+release/
+tools/
+游戏源文件/
+.env

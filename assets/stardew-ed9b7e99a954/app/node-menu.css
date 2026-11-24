@@ -1,29 +1,3 @@
-.estate-stats {
-  max-width:1560px;grid-template-columns:1.25fr .85fr .72fr .72fr 1.22fr 1.45fr;
-  padding-inline:clamp(12px,3vw,44px);--stat-rule:#cdb995;--stat-muted:#705e4a;
-}
-.night .estate-stats {--stat-rule:#2a4155;--stat-muted:#a2b9cd;}
-.estate-stats .base-stats {display:contents;}
-.estate-stats .stat {gap:clamp(7px,.8vw,13px);padding-inline:8px;}
-.estate-stats > .stat::before {
-  content:"";position:absolute;left:0;top:8px;bottom:8px;width:1px;background:var(--stat-rule);
-}
-.estate-stats > .stat .stat-icon img {width:36px;height:36px;object-fit:contain;}
-.estate-stats > .stat .stat-value strong {font-size:clamp(22px,2vw,30px);overflow-wrap:anywhere;white-space:normal;}
-.estate-stats .stat-note {font-size:10px;line-height:1.35;margin-top:4px;color:var(--stat-muted);}
-.estate-stats .stat-period {margin-left:5px;color:var(--stat-muted);font-size:10px;letter-spacing:0;font-weight:500;white-space:nowrap;}
-@media(min-width:661px) and (max-width:1140px) {
-  .estate-stats {grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 0;}
-  .estate-stats .offline::before {display:none;}
-}
-@media(max-width:660px) {
-  .estate-stats {grid-template-columns:repeat(2,minmax(0,1fr));padding:0;}
-  .estate-stats > .stat,.estate-stats .base-stats .stat:nth-child(n+3) {border-top:1px solid var(--stat-rule);}
-  .estate-stats #remaining-value::before {display:none;}
-  .estate-stats > .stat .stat-icon img {width:28px;height:28px;}
-  .estate-stats > .stat {justify-content:flex-start;}
-}
-
 .node-list-title {
   display:flex;
   align-items:baseline;
@@ -278,12 +252,12 @@
   content:"";width:var(--glyph-size);height:var(--glyph-size);background:currentColor;
   mask:var(--tool-icon) center / var(--glyph-scale,100%) no-repeat;
 }
-.node-toolbar [data-view="grid"] {--tool-icon:url("/assets/stardew-bb8ad0bbdf18/ui/tabler/layout-grid.svg");--glyph-scale:110%;}
-.node-toolbar [data-view="list"] {--tool-icon:url("/assets/stardew-bb8ad0bbdf18/ui/tabler/table.svg");}
-.heading-right #view-mode {--tool-icon:url("/assets/stardew-bb8ad0bbdf18/ui/tabler/moon.svg");}
-.night .heading-right #view-mode {--tool-icon:url("/assets/stardew-bb8ad0bbdf18/ui/tabler/sun.svg");}
+.node-toolbar [data-view="grid"] {--tool-icon:url("/assets/stardew-ed9b7e99a954/ui/tabler/layout-grid.svg");--glyph-scale:110%;}
+.node-toolbar [data-view="list"] {--tool-icon:url("/assets/stardew-ed9b7e99a954/ui/tabler/table.svg");}
+.heading-right #view-mode {--tool-icon:url("/assets/stardew-ed9b7e99a954/ui/tabler/moon.svg");}
+.night .heading-right #view-mode {--tool-icon:url("/assets/stardew-ed9b7e99a954/ui/tabler/sun.svg");}
 .node-toolbar .node-search {
-  --tool-icon:url("/assets/stardew-bb8ad0bbdf18/ui/tabler/search.svg");position:relative;display:flex;min-width:0;color:var(--icon);
+  --tool-icon:url("/assets/stardew-ed9b7e99a954/ui/tabler/search.svg");position:relative;display:flex;min-width:0;color:var(--icon);
   margin-left:5px;
 }
 .node-toolbar .node-search::after {

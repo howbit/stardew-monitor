@@ -46,9 +46,9 @@ function buildingMarkup(node){
     const base = `<img class="building-base" alt="" src="${window.nodeFarmSprite(node.building)}">`;
     return base + (node.online ? `<img class="window-light" alt="" src="${window.nodeFarmSprite(node.building,true)}">` : '');
   }
-  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-bb8ad0bbdf18/buildings3/${node.building}.png">`;
-  const base = `<img class="building-base" alt="" src="/assets/stardew-bb8ad0bbdf18/lights3/${node.building}-night.png">`;
-  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-bb8ad0bbdf18/lights3/${node.building}-light.png">` : '';
+  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-ed9b7e99a954/buildings3/${node.building}.png">`;
+  const base = `<img class="building-base" alt="" src="/assets/stardew-ed9b7e99a954/lights3/${node.building}-night.png">`;
+  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-ed9b7e99a954/lights3/${node.building}-light.png">` : '';
   return base + lights;
 }
 
@@ -151,13 +151,13 @@ function systemBadge(node, detailUrl) {
   const os = node.os?.trim();
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
-  const src = file ? '/os-icons/'+file : '/assets/stardew-bb8ad0bbdf18/ui/lucide/hard-drive.svg';
+  const src = file ? '/os-icons/'+file : '/assets/stardew-ed9b7e99a954/ui/lucide/hard-drive.svg';
   return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="查看系统版本 '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
 
 function metricIcon(name) {
-  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-bb8ad0bbdf18/ui/lucide/'+name+'.svg)"></i>';
+  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-ed9b7e99a954/ui/lucide/'+name+'.svg)"></i>';
 }
 
 function percentTrack(used, label) {

@@ -156,11 +156,6 @@
     return (server.currency || '') + raw + (cycle ? '/' + cycle : '');
   }
 
-  function monthlyReport(metrics, stamp) {
-    const rx = metric(metrics.net_rx_monthly), tx = metric(metrics.net_tx_monthly);
-    return rx !== null && tx !== null && stamp ? {rx, tx, stamp} : null;
-  }
-
   function routeSamples(series, key) {
     if (!Array.isArray(series)) return [];
     return series.filter(p => p && Object.hasOwn(p,key) && p[key] !== false && timestamp(p.ts) !== null)
@@ -264,9 +259,6 @@
           ramCapacity:capacity(metadata.ramUsedMB,metadata.ramTotalMB), diskCapacity:capacity(metadata.diskUsedMB,metadata.diskTotalMB),
           tcp:metadata.tcpConn, udp:metadata.udpConn, expireDate:metadata.expireDate,
           price:metadata.price, trafficMode:'上下行合计', periodUsed:formatBytes(used),
-          finance:{price:metadata.price,expire_date:metadata.expireDate},
-          monthlyReport:{rx:parseTrafficLimitBytes(rx),tx:parseTrafficLimitBytes(tx),stamp:Date.now()},
-          resetDay:1,
           routeData:demoRouteHistory(node),
           remaining:cap === '—' ? null : formatBytes(Math.max(0,parseTrafficLimitBytes(cap)-used))};
       });
@@ -444,13 +436,6 @@
         group: server.server_group, remark:server.public_remark,
         tags: String(server.tags ?? '').split(',').map(tag => tag.trim()).filter(Boolean),
         price:billingPrice(server, config),
-        finance:enabled(config.show_price) && enabled(config.show_expire) ? {
-          price:server.price, currency:server.currency, billing_cycle:server.billing_cycle,
-          expire_date:server.expire_date, tags:server.tags
-        } : null,
-        resetDay:metric(server.reset_day ?? 1),
-        monthlyTimeZone:server.time_zone || server.timeZone || loc.timeZone,
-        monthlyReport:server.monthlyReport,
         rateSamples:server.rateSamples,
         arch: server.arch || '',
         location: loc,
@@ -816,9 +801,6 @@
           this.isLive = true;
           this.rawServers = serversRes.value.servers;
           this.siteConfig = {...this.siteConfig,...serversRes.value.sysConfig};
-          for (const server of this.rawServers) {
-            server.monthlyReport = monthlyReport(server,timestamp(server.report_timestamp ?? server.last_updated));
-          }
           for (const update of serversRes.value.latestReportUpdates || []) {
             const server = this.rawServers.find(s => s.id === update.serverId);
             if (server) rememberRates(server,update.samples);
@@ -885,8 +867,6 @@
                     const metrics = s.data || s.payload || s.metrics || {};
                     const ts = timestamp(s.ts ?? metrics.report_timestamp ?? metrics.timestamp);
                     if (ts && ts < (timestamp(target.report_timestamp ?? target.last_updated) || 0)) continue;
-                    const month = monthlyReport(metrics,ts);
-                    if (month) target.monthlyReport = month;
                     Object.assign(target, metrics);
                     if (ts) Object.assign(target, {report_timestamp:ts, last_updated:ts, is_online:Date.now()-ts < 300000});
                     updated = true;

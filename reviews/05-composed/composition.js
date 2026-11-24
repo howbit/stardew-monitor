@@ -102,7 +102,9 @@ let currentTime;
 let homeVisible = true;
 function syncSceneCopy() {
   if (!homeVisible) return;
-  for (const el of document.querySelectorAll('[data-report]')) el.textContent = reportText(Number(el.dataset.report));
+  for (const el of document.querySelectorAll('[data-report]')) {
+    el.textContent = reportText(Number(el.dataset.report), el.hasAttribute('data-last-report'));
+  }
   const place = scenePlace();
   currentTime = Core.resolveScene(place);
   const manual = seasonSelect.value !== 'auto';

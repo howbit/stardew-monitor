@@ -32,31 +32,47 @@
 .farm-detail :is(.sysinfo-label,.chart-subtitle) {color:var(--farm-muted);}
 .farm-detail .sysinfo-label {letter-spacing:normal;}
 .farm-detail .terminal-header {
-  display:grid;grid-template-columns:1fr minmax(0,2fr) 1fr;align-items:center;gap:.5rem;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.5rem;
 }
-.farm-detail .terminal-dots {width:auto;}
-.farm-detail .terminal-title {display:block;text-align:center;overflow-wrap:anywhere;}
+.farm-detail .host-name {min-width:0;flex-wrap:wrap;gap:.5rem;}
+.farm-detail .terminal-title {display:block;margin:0;font-size:20px;font-weight:700;text-align:start;overflow-wrap:anywhere;}
 .farm-detail .admin-link-header {justify-self:end;}
 .farm-detail .nav-bar {
   display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:.6rem;
 }
 .farm-detail .time-selector {justify-self:start;max-width:100%;flex-wrap:wrap;}
+.farm-detail .extra-time-select {display:none;}
 .farm-detail .back-btn {grid-column:2;justify-self:end;align-self:start;white-space:nowrap;}
+.farm-detail .hardware-details {border-top:1px solid var(--farm-line);}
+.farm-detail .hardware-details summary {padding:10px 16px;color:var(--farm-green);font-size:13px;font-weight:650;cursor:pointer;}
 .farm-detail .ping-node-1 {color:var(--farm-red);}
 .farm-detail .ping-node-2 {color:var(--farm-blue);}
 .farm-detail .ping-node-3 {color:var(--farm-green);}
 .farm-detail .ping-node-4 {color:var(--farm-amber);}
-.farm-detail :is(a,button,select):focus-visible {outline:2px solid var(--farm-green);outline-offset:1px;}
+.farm-detail :is(a,button,select,summary):focus-visible {outline:2px solid var(--farm-green);outline-offset:1px;}
 .detail-message, .history-note { padding: 1rem; }
 .history-note { color: var(--text-muted); }
 .charts-container > *, .sysinfo-grid > * { min-width: 0; }
-.sysinfo-value { overflow-wrap: anywhere; }
+.farm-detail .sysinfo-value {word-break:normal;overflow-wrap:anywhere;}
+.farm-detail .sysinfo-small {font-size:12px;}
 @media (max-width: 640px) {
+  .farm-detail .time-selector {
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(51px,1.18fr);
+    max-width:15rem;padding:0;border:0;gap:2px;overflow:visible;
+  }
+  .farm-detail .time-btn {min-height:44px;padding:4px 6px;}
+  .farm-detail .extra-time-btn {display:none;}
+  .farm-detail .extra-time-select {
+    display:block;width:100%;min-height:44px;min-width:0;padding:0 3px;border:1px solid var(--farm-line);
+    border-radius:4px;background:var(--farm-inset);color:var(--farm-ink);font:inherit;font-size:12px;
+  }
+  .farm-detail .extra-time-select.active {background:var(--farm-green);color:var(--farm-paper);}
+  .farm-detail .back-btn {min-height:44px;display:inline-flex;align-items:center;}
   .farm-detail .sysinfo-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .farm-detail .sysinfo-item {padding:9px 12px;}
+  .farm-detail .hardware-details summary {padding:11px 12px;min-height:44px;}
+  .farm-detail .sysinfo-label {margin-bottom:3px;}
   .farm-detail .sysinfo-wide {grid-column:1 / -1;}
-  .farm-detail .sysinfo-value {overflow-wrap:normal;}
-  .farm-detail .sysinfo-small {overflow-wrap:anywhere;}
   .farm-detail .measure {display:inline-block;white-space:nowrap;}
   .charts-container { grid-template-columns: minmax(0, 1fr); }
-  .host-name { min-width: 0; overflow-wrap: anywhere; }
 }

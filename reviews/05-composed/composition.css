@@ -103,7 +103,7 @@ body.night{background:var(--night-paper)}
 .stat-value{display:flex;align-items:baseline;gap:5px;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
 .stat-value strong{font-size:32px;font-weight:650}
 .stat-value .unit{font-size:9px}
-.flow-breakdown{margin-top:4px;color:#7c705e;font-size:8px;white-space:nowrap}
+.flow-breakdown{margin-top:4px;color:#66594b;font-size:11px;line-height:1.35;font-variant-numeric:tabular-nums}
 
 @media(max-width:360px){
   .stats .stat.realtime .stat-value strong{font-size:19px}
@@ -1394,6 +1394,7 @@ body.night[data-season="winter"]{--night-paper:#0a1725}
 .night .stat-label{color:#8eaecb}
 .night .stat-value strong{color:#fbf6e8}
 .night .stat-value .unit{color:#8eaecb}
+.night .flow-breakdown{color:#8eaecb}
 .night .stat+.stat:before{background:#233b52}
 .night .stat-icon .farm-computer,
 .night .stat-icon img{filter:brightness(1.05) drop-shadow(0 1px 3px rgba(0,0,0,0.5))}
@@ -2171,7 +2172,7 @@ body.night .monitor-page .seasonal-footer:before{
   /* 移动端 2x2 统计栏 */
   .summary-strip{padding:0;width:100%;box-sizing:border-box}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr));padding:0;width:100%;box-sizing:border-box}
-  .stat{min-height:84px;padding:8px 10px;justify-content:flex-start;gap:10px;min-width:0;box-sizing:border-box}
+  .stat{min-height:68px;padding:5px 10px;justify-content:flex-start;gap:10px;min-width:0;box-sizing:border-box}
   .stat:nth-child(3),.stat:nth-child(4){border-top:1px solid #cdb995}
   .stat:nth-child(3):before{display:none}
   .stat+.stat:before{top:10px;bottom:10px}
@@ -2184,12 +2185,12 @@ body.night .monitor-page .seasonal-footer:before{
   .flow-breakdown{display:none !important}
 
   /* 内容区控制栏 */
-  .content-panel{padding:14px 12px 12px;width:100%;max-width:100%;box-sizing:border-box;overflow-x:hidden}
-  .content-controls{margin-bottom:12px}
-  .content-heading{display:flex;flex-direction:column;gap:10px;width:100%}
-  .heading-left{display:flex;flex-direction:column;gap:8px;width:100%}
+  .content-panel{padding:10px 12px 12px;width:100%;max-width:100%;box-sizing:border-box;overflow-x:hidden}
+  .content-controls{margin-bottom:8px}
+  .content-heading{display:flex;flex-direction:column;gap:6px;width:100%}
+  .heading-left{display:flex;flex-direction:row;justify-content:space-between;gap:6px;width:100%}
   .heading-left h1{font-size:17px;margin:0}
-  .region-tabs{display:flex;width:100%;gap:5px;box-sizing:border-box}
+  .region-tabs{display:flex;gap:5px;box-sizing:border-box}
   .region-tab{flex:1;text-align:center;padding:5px 0;font-size:12px;font-weight:750;min-width:0}
   .heading-right{display:flex;flex-direction:column;gap:8px;width:100%}
   .heading-right .search{display:flex;width:100%;min-width:0;margin:0}

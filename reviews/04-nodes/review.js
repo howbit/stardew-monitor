@@ -129,8 +129,19 @@ function uptimeText(node) {
   return node.days == null ? '—' : nodeText('{n}天', {n:node.days});
 }
 
-function reportText(stamp) {
-  return stamp ? nodeText('{age}前上报',{age:elapsedText(Date.now()-stamp)}) : '';
+function reportText(stamp, offline) {
+  const age = stamp && elapsedText(Date.now()-stamp);
+  return offline
+    ? nodeText('最后上报：{age}',{age:age ? nodeText('{age}前',{age}) : nodeText('未上报')})
+    : age ? nodeText('{age}前上报',{age}) : '';
+}
+
+function reportMarkup(node) {
+  if (node.online && !node.lastUpdated) return '';
+  const time = Number(node.lastUpdated) || 0;
+  const offline = !node.online;
+  return '<small class="report-age" data-report="'+time+'"'+(offline ? ' data-last-report' : '')+'>'+
+    escapeText(reportText(time,offline))+'</small>';
 }
 
 const chosenRoutes = new Map();
@@ -383,6 +394,7 @@ function renderNodeSummary(node, detailUrl) {
   const os = getNodeOSInfo(node).name;
   return `<header class="summary-head"><h3><span class="summary-status" role="img" aria-label="${status}" title="${status}"></span>
     ${flag}<a class="name" href="${detailUrl}">${escapeText(node.id)}</a></h3>
+    ${node.online ? '' : reportMarkup(node)}
     ${billing ? '<p class="node-billing">'+billing+'</p>' : ''}</header>
     <dl class="summary-metrics"><div class="summary-metric"><dt>${nodeText('系统')}</dt><dd class="summary-os" title="${escapeText(os)}">${systemBadge(node,detailUrl)}<span>${escapeText(os)}</span></dd></div>
     ${metrics}${speed('上传',up)}${speed('下载',down)}</dl>
@@ -535,7 +547,7 @@ function render(){
       : '↓ '+escapeText(rx)+'　↑ '+escapeText(tx);
     const expiry = expiryInfo(node.expireDate);
     const expiryBadge = expiry ? '<span class="expiry-notice">'+escapeText(expiry.text)+'</span>' : '';
-    const report = node.lastUpdated ? '<small class="report-age" data-report="'+Number(node.lastUpdated)+'">'+reportText(node.lastUpdated)+'</small>' : '';
+    const report = reportMarkup(node);
     const status = '<div class="node-status-badge '+(isOnline ? 'online' : 'offline')+'"><span><i class="status-dot"></i> '+
       nodeText(isOnline ? '在线' : '离线')+'</span>'+(!menuCard && currentView === 'list' ? expiryBadge : '')+(menuCard ? '' : report)+'</div>';
     const details = menuCard ? '' : '<a class="details-link" href="'+detailUrl+'">详情 ↗</a>';
@@ -571,7 +583,8 @@ function render(){
     }).join('');
     const history = activeLabel === undefined ? '' : '<div class="route-summary">'+escapeText(activeLabel)+' '+charts.get(activeLabel)+'</div>';
     const footer = history || details ? '<div class="card-footer-row">'+history+details+'</div>' : '';
-    const routes = routePills ? '<div class="route-pings-bar">'+routePills+'</div>' : '<div class="route-no-data">'+nodeText('线路延迟未上报')+'</div>';
+    const headings = menuCard ? '<div class="probe-labels" aria-hidden="true"><span>'+nodeText('延迟')+'</span><span>'+nodeText('丢包率')+'</span></div>' : '';
+    const routes = routePills ? '<div class="route-pings-bar">'+headings+routePills+'</div>' : '<div class="route-no-data">'+nodeText('线路延迟未上报')+'</div>';
 
     if (currentView === 'list' && !menuCard) {
       const columns = [['CPU',node.cpu],['内存',node.ram],['磁盘',node.disk],['本期配额',node.use]].map(([k,v]) =>

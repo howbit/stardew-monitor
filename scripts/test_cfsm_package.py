@@ -167,7 +167,7 @@ def check(archive, browser):
     page.locator('.time-btn.active').click()
     page.wait_for_timeout(150)
     assert len(history_requests) == selected_history
-    check_system_fonts(page, ['.host-name > span:nth-last-child(2)', '.sysinfo-value', '.time-btn.active'])
+    check_system_fonts(page, ['.terminal-title', '.sysinfo-value', '.time-btn.active'])
     assert page.url.endswith('#/server/probe-1')
     assert any('/ServerPage-' in path for path, _ in visits)
     assert [path for path, kind in visits if kind == 'document'] == documents
@@ -211,6 +211,15 @@ def check(archive, browser):
             selector = page.locator('.time-selector').bounding_box()
             back = page.locator('.back-btn').bounding_box()
             assert selector['x'] + selector['width'] <= back['x'] and abs(selector['y']-back['y']) <= 1
+            if width == 320:
+                expect(page.get_by_role('heading', name=NODE['name'], exact=True)).to_be_visible()
+                expect(page.locator('.time-btn:visible')).to_have_count(3)
+                expect(page.get_by_role('combobox', name='更多时间范围')).to_be_visible()
+                assert selector['height'] <= 48, selector
+        hardware = page.locator('.hardware-details')
+        expect(hardware.locator('.sysinfo-item').first).to_be_hidden()
+        hardware.locator('summary').click()
+        expect(hardware.locator('.sysinfo-item').first).to_be_visible()
         page.reload()
         expect(page.locator('.terminal-title')).to_have_text(NODE['name'])
         expect(page.locator('.host-card')).to_have_css('background-color', surface)
@@ -321,7 +330,8 @@ def check(archive, browser):
     expect(page.locator('.host-name .flag-img')).to_have_attribute('src', re.compile(r'flags/us\.svg$'))
     expect(page.locator('#info-panel')).to_contain_text('剩余 15 天')
     expect(page.locator('.time-btn.active')).to_have_text('10m')
-    page.get_by_role('button',name='6h',exact=True).click()
+    with page.expect_response(lambda response: '/api/history/all' in response.url):
+        page.get_by_role('combobox', name='更多时间范围').select_option('6')
     expect(page.locator('.history-note')).to_have_count(0)
     assert (uuid, '6') in history_requests
     page.set_viewport_size({'width':1920, 'height':1080})
@@ -505,8 +515,13 @@ def check(archive, browser):
             assert history_requests[-1] == ('probe-1', '0.5')
             for width in (320,390,480):
                 page.set_viewport_size({'width':width,'height':844})
-                assert page.locator('.sysinfo-grid').evaluate("el=>getComputedStyle(el).gridTemplateColumns.split(' ').length") == 2
+                assert page.locator('#info-panel').evaluate("el=>getComputedStyle(el).gridTemplateColumns.split(' ').length") == 2
+                expect(page.get_by_role('combobox', name='更多时间范围')).to_have_value('0.5')
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            with page.expect_response(lambda response: '/api/history/all' in response.url):
+                page.get_by_role('combobox', name='更多时间范围').select_option('6')
+            expect(page.get_by_role('combobox', name='更多时间范围')).to_have_value('6')
+            assert history_requests[-1] == ('probe-1', '6')
         else:
             expect(page.locator('#cards article')).to_have_count(1)
     require_login = True

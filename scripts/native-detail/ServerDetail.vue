@@ -3,10 +3,20 @@
 <template>
   <div class="container">
     <header class="terminal-header">
-      <div class="terminal-dots" aria-hidden="true">
-        <span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span>
+      <div class="host-name">
+        <span v-if="!loading" class="country-os-icons">
+          <img v-if="server.region && server.region !== 'xx'"
+            :src="workerAsset('flags/' + getFlagRegionCode(server.region) + '.svg')" :alt="server.region" class="flag-img">
+          <span v-else class="flag-fallback">🏳️</span>
+          <img v-if="getOSImage(server.os)" :key="server.os" :src="workerAsset(getOSImage(server.os))"
+            :alt="getOSName(server.os)" class="os-icon-img" loading="lazy" @error="$event.target.hidden = true">
+        </span>
+        <h1 class="terminal-title">{{ server.name || initialServer.name }}</h1>
+        <span v-if="!loading" class="status-badge" :class="{ online: isOnline, offline: !isOnline }">
+          <span class="pulse-dot" :class="{ online: isOnline, offline: !isOnline }"></span>
+          <span>{{ isOnline ? trans.online : trans.offline }}</span>
+        </span>
       </div>
-      <h1 class="terminal-title">{{ server.name || initialServer.name }}</h1>
       <a class="admin-link-header" :href="adminHref" :aria-label="adminLabel" :title="adminLabel">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
           <path d="m10 3-.6 2.1-1.6.9-2.1-.5-2 3.5 1.5 1.6v2.8L3.7 15l2 3.5 2.1-.5 1.6.9.6 2.1h4l.6-2.1 1.6-.9 2.1.5 2-3.5-1.5-1.6v-2.8L20.3 9l-2-3.5-2.1.5-1.6-.9L14 3z"/>
@@ -28,10 +38,16 @@
           v-for="option in timeOptions" 
           :key="option.hours"
           class="time-btn"
-          :class="{ active: currentHours === option.hours }"
+          :class="{ active: currentHours === option.hours, 'extra-time-btn': !option.common }"
           :aria-pressed="currentHours === option.hours"
           @click="setTimeRange(option.hours)"
         >{{ option.label }}</button>
+        <select class="extra-time-select" :class="{ active: extraTimeValue !== '' }"
+          :aria-label="farmText('更多时间范围')" :value="extraTimeValue"
+          @change="setTimeRange(Number($event.target.value))">
+          <option value="" disabled>{{ farmText('更多') }}</option>
+          <option v-for="option in extraTimeOptions" :key="option.hours" :value="option.hours">{{ option.label }}</option>
+        </select>
       </div>
       <router-link to="/" class="back-btn">{{ trans.back }}</router-link>
     </div>
@@ -41,24 +57,6 @@
       <button type="button" @click="continueLiveConnection">{{ farmText('重新连接') }}</button>
     </div>
     <div class="host-card">
-      <div class="host-card-header">
-        <div class="host-name">
-          <span class="prompt">root@</span>
-          <span class="country-os-icons">
-            <img v-if="server.region && server.region !== 'xx'"
-              :src="workerAsset('flags/' + getFlagRegionCode(server.region) + '.svg')" :alt="server.region" class="flag-img">
-            <span v-else class="flag-fallback">🏳️</span>
-            <img v-if="getOSImage(server.os)" :key="server.os" :src="workerAsset(getOSImage(server.os))"
-              :alt="getOSName(server.os)" class="os-icon-img" loading="lazy" @error="$event.target.hidden = true">
-          </span>
-          <span>{{ server.name || 'Loading...' }}</span>
-          <span style="color: var(--text-muted);">:~#</span>
-        </div>
-        <span class="status-badge" :class="{ online: isOnline, offline: !isOnline }">
-          <span class="pulse-dot" :class="{ online: isOnline, offline: !isOnline }"></span>
-          <span>{{ isOnline ? trans.online : trans.offline }}</span>
-        </span>
-      </div>
       <div class="sysinfo-grid" id="info-panel">
         <div class="sysinfo-item">
           <span class="sysinfo-label">⏱ {{ trans.uptime }}</span>
@@ -67,26 +65,6 @@
         <div class="sysinfo-item" v-if="isShown('show_expire') && server.expire_date">
           <span class="sysinfo-label">📅 {{ trans.expire }}</span>
           <span class="sysinfo-value" :class="{ 'expired': isExpired }">{{ expireDaysText }}</span>
-        </div>
-        <div class="sysinfo-item sysinfo-wide">
-          <span class="sysinfo-label">💻 {{ trans.os }} / {{ trans.architecture }}</span>
-          <span class="sysinfo-value sysinfo-small">{{ server.os || '—' }} / {{ server.arch || '—' }}</span>
-        </div>
-        <div class="sysinfo-item" v-if="server.kernel_version">
-          <span class="sysinfo-label">🧩 {{ trans.kernelVersion || 'Kernel' }}</span>
-          <span class="sysinfo-value sysinfo-small">{{ server.kernel_version }}</span>
-        </div>
-        <div class="sysinfo-item sysinfo-wide">
-          <span class="sysinfo-label">🔧 {{ trans.cpuInfo }}</span>
-          <span class="sysinfo-value sysinfo-small">{{ server.cpu_info || '—' }} x {{ server.cpu_cores || '—' }}</span>
-        </div>
-        <div class="sysinfo-item" v-if="hasGpuData">
-          <span class="sysinfo-label">🎮 {{ trans.gpuInfo || 'GPU Info' }}</span>
-          <span class="sysinfo-value sysinfo-small">{{ gpuInfoText }}</span>
-        </div>
-        <div class="sysinfo-item">
-          <span class="sysinfo-label">💾 {{ trans.totalDiskRam }}</span>
-          <span class="sysinfo-value">{{ formatBytes(server.disk_total, 1024 ** 2) }} / {{ formatBytes(server.ram_total, 1024 ** 2) }}</span>
         </div>
         <div class="sysinfo-item">
           <span class="sysinfo-label">📊 {{ trans.loadAvg }}</span>
@@ -101,11 +79,11 @@
           <span class="sysinfo-value sysinfo-small"><span class="measure">↓ {{ formatBytes(server.net_in_speed, 1, '/s') }}</span> / <span class="measure">↑ {{ formatBytes(server.net_out_speed, 1, '/s') }}</span></span>
         </div>
         <div class="sysinfo-item" v-if="server.net_rx_monthly != null || server.net_tx_monthly != null">
-          <span class="sysinfo-label">📊 {{ trans.monthlyTraffic }}</span>
+          <span class="sysinfo-label">📊 {{ farmText('本期流量') }}</span>
           <span class="sysinfo-value sysinfo-small"><span class="measure">↓ {{ formatBytes(server.net_rx_monthly) }}</span> / <span class="measure">↑ {{ formatBytes(server.net_tx_monthly) }}</span></span>
         </div>
         <div class="sysinfo-item" v-if="isShown('show_tf') && (server.net_rx_monthly != null || server.net_tx_monthly != null)">
-          <span class="sysinfo-label">📦 {{ trans.monthlyTrafficLimit }}</span>
+          <span class="sysinfo-label">📦 {{ farmText('本期配额') }}</span>
           <span class="sysinfo-value sysinfo-small">
             {{ formatBytes(trafficUsageBytes) }}
             /
@@ -113,14 +91,39 @@
           </span>
         </div>
         <div class="sysinfo-item">
-          <span class="sysinfo-label">🕐 {{ trans.bootTime }}</span>
-          <span class="sysinfo-value sysinfo-small">{{ formatTimestamp(server.boot_time) }}</span>
-        </div>
-        <div class="sysinfo-item">
           <span class="sysinfo-label">⏰ {{ trans.lastUpdate }}</span>
           <span class="sysinfo-value sysinfo-small">{{ lastUpdateText }}</span>
         </div>
       </div>
+      <details class="hardware-details">
+        <summary>{{ farmText('硬件与系统') }}</summary>
+        <div class="sysinfo-grid">
+          <div class="sysinfo-item sysinfo-wide">
+            <span class="sysinfo-label">💻 {{ trans.os }} / {{ trans.architecture }}</span>
+            <span class="sysinfo-value sysinfo-small">{{ server.os || '—' }} / {{ server.arch || '—' }}</span>
+          </div>
+          <div class="sysinfo-item" v-if="server.kernel_version">
+            <span class="sysinfo-label">🧩 {{ trans.kernelVersion || 'Kernel' }}</span>
+            <span class="sysinfo-value sysinfo-small">{{ server.kernel_version }}</span>
+          </div>
+          <div class="sysinfo-item sysinfo-wide">
+            <span class="sysinfo-label">🔧 {{ trans.cpuInfo }}</span>
+            <span class="sysinfo-value sysinfo-small">{{ server.cpu_info || '—' }} x {{ server.cpu_cores || '—' }}</span>
+          </div>
+          <div class="sysinfo-item" v-if="hasGpuData">
+            <span class="sysinfo-label">🎮 {{ trans.gpuInfo || 'GPU Info' }}</span>
+            <span class="sysinfo-value sysinfo-small">{{ gpuInfoText }}</span>
+          </div>
+          <div class="sysinfo-item">
+            <span class="sysinfo-label">💾 {{ trans.totalDiskRam }}</span>
+            <span class="sysinfo-value">{{ formatBytes(server.disk_total, 1024 ** 2) }} / {{ formatBytes(server.ram_total, 1024 ** 2) }}</span>
+          </div>
+          <div class="sysinfo-item">
+            <span class="sysinfo-label">🕐 {{ trans.bootTime }}</span>
+            <span class="sysinfo-value sysinfo-small">{{ formatTimestamp(server.boot_time) }}</span>
+          </div>
+        </div>
+      </details>
     </div>
 
     <p v-if="historyMessage" class="history-note" role="status">{{ historyMessage }}</p>
@@ -569,19 +572,19 @@ const formatDiskIoAxisTick = (value) => {
   return number.toFixed(1)
 }
 
-const timeOptions = computed(() => {
-  return [
-    { hours: REALTIME_HISTORY_HOURS, label: '10m' },
+const timeOptions = [
+    { hours: REALTIME_HISTORY_HOURS, label: '10m', common: true },
     { hours: 0.5, label: '30m' },
-    { hours: 1, label: '1h' },
+    { hours: 1, label: '1h', common: true },
     { hours: 6, label: '6h' },
     { hours: 12, label: '12h' },
-    { hours: 24, label: '24h' },
+    { hours: 24, label: '24h', common: true },
     { hours: 48, label: '2d' },
     { hours: 96, label: '4d' },
     { hours: 168, label: '7d' },
-  ]
-})
+]
+const extraTimeOptions = timeOptions.filter(option => !option.common)
+const extraTimeValue = computed(() => extraTimeOptions.some(option => option.hours === currentHours.value) ? currentHours.value : '')
 
 const isOnline = computed(() => server.value.is_online == null ? isServerOnline(server.value)
   : ![false, 0, 'false', '0'].includes(server.value.is_online))
@@ -989,7 +992,7 @@ const CHART_DEFS = [
         grid: { color: chartTheme.grid, drawBorder: false, drawOnChartArea: false, tickLength: 0 },
         ticks: {
           color: chartTheme.axis,
-          font: { size: 9, family: "'JetBrains Mono', monospace" },
+          font: { size: 11 },
           padding: 8,
           callback: formatDiskIoAxisTick
         }
@@ -1081,7 +1084,7 @@ const initCharts = () => {
   const chartTheme = getChartThemeColors()
 
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily
-  Chart.defaults.font.size = 10
+  Chart.defaults.font.size = 11
   Chart.defaults.color = chartTheme.axis
   Chart.defaults.plugins.tooltip.backgroundColor = chartTheme.tooltipBg
   Chart.defaults.plugins.tooltip.titleColor = chartTheme.tooltipTitle
@@ -1110,7 +1113,7 @@ const initCharts = () => {
           labels: {
             boxWidth: 10,
             padding: 12,
-            font: { size: 10, family: "'JetBrains Mono', monospace" },
+            font: { size: 11 },
             usePointStyle: true,
             color: chartTheme.axis,
             filter: (legendItem, chartData) => {
@@ -1164,13 +1167,13 @@ const initCharts = () => {
             display: false,
             text: '',
             color: chartTheme.axis,
-            font: { size: 10, family: "'JetBrains Mono', monospace" }
+            font: { size: 11 }
           },
           ticks: {
             maxTicksLimit: CHART.MAX_TICKS,
             autoSkipPadding: 16,
             color: chartTheme.axis,
-            font: { size: 9, family: "'JetBrains Mono', monospace" },
+            font: { size: 11 },
             maxRotation: 0,
             padding: 8,
             callback: function(value) {
@@ -1184,7 +1187,7 @@ const initCharts = () => {
           grid: { color: chartTheme.grid, drawBorder: false, tickLength: 0 },
           ticks: {
             color: chartTheme.axis,
-            font: { size: 9, family: "'JetBrains Mono', monospace" },
+            font: { size: 11 },
             padding: 8,
             callback: tickFormat || function(value) { return value + unit; }
           }

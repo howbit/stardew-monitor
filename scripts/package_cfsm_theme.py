@@ -31,6 +31,8 @@ def runtime_config(html):
     connect = list(dict.fromkeys(api + origins('CSP_API') + [
         origin.replace('https:', 'wss:', 1) for origin in api]))
     tags = [f'<meta name="apiBase" content="{escape(",".join(api))}">'] if api else []
+    if api:
+        html = html.replace('href="/admin#/admin"', f'href="{escape(api[0])}/admin#/admin"')
     if static or connect:
         allowed = " ".join(static)
         policy = f"img-src 'self' data: blob: https: {allowed}; media-src 'self' blob: {allowed}; "

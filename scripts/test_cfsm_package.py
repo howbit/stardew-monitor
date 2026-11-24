@@ -48,6 +48,7 @@ def check(archive, browser):
     theme_options = {}
     access_policy = {}
     require_proof = False
+    require_login = False
     sockets = []
 
     def serve(route):
@@ -70,8 +71,11 @@ def check(archive, browser):
             if require_proof and route.request.headers.get('x-turnstile-token') == 'unit-response':
                 proof = {'verified':True, 'turnstile_verified':'unit-proof'}
             return route.fulfill(json={'site_title': '农场测试', 'theme_options': theme_options, **access_policy, **proof})
-        if require_proof and path in ('/api/servers','/api/server') and route.request.headers.get('x-turnstile-verified') != 'unit-proof':
-            return route.fulfill(status=403, json={})
+        if path in ('/api/servers', '/api/server', '/api/history/all'):
+            if require_login and route.request.headers.get('authorization') != 'Bearer fixture-jwt':
+                return route.fulfill(status=401, json={})
+            if require_proof and route.request.headers.get('x-turnstile-verified') != 'unit-proof':
+                return route.fulfill(status=403, json={})
         if path == '/api/servers':
             return route.fulfill(status=status, json={'servers': nodes})
         if path == '/api/server':
@@ -443,6 +447,24 @@ def check(archive, browser):
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         else:
             expect(page.locator('#cards article')).to_have_count(1)
+    require_login = True
+    for require_proof in (False, True):
+        access_policy.update(is_public=False, turnstile_enabled=require_proof)
+        page.evaluate("""() => {
+            localStorage.setItem('jwt_token', 'expired-fixture');
+            localStorage.removeItem('turnstile_verified');
+        }""")
+        page.goto(SITE + '/')
+        expect(page).to_have_url(SITE + '/admin#/admin')
+        assert page.evaluate("localStorage.getItem('jwt_token')") is None
+        page.evaluate("localStorage.setItem('jwt_token', 'fixture-jwt')")
+        page.goto(SITE + '/')
+        if require_proof:
+            page.get_by_role('button', name='验证访问').click()
+            page.get_by_role('button', name='Complete test challenge').click()
+        expect(page.locator('#cards article')).to_have_count(1)
+        page.locator('a.name').click()
+        expect(page.locator('.host-name')).to_contain_text('同名')
     assert not missing, missing
     assert not errors, errors
     page.close()

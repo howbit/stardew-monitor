@@ -44,13 +44,12 @@
       <div class="host-card-header">
         <div class="host-name">
           <span class="prompt">root@</span>
-          <span v-if="server.region && server.region !== 'xx'" class="country-os-icons">
-            <img :src="getPublicAssetUrl('flags/' + getFlagRegionCode(server.region) + '.svg')" :alt="server.region" class="flag-img">
-            <OsIcon :os="server.os" />
-          </span>
-          <span v-else class="country-os-icons">
-            <span class="flag-fallback">🏳️</span>
-            <OsIcon :os="server.os" />
+          <span class="country-os-icons">
+            <img v-if="server.region && server.region !== 'xx'"
+              :src="workerAsset('flags/' + getFlagRegionCode(server.region) + '.svg')" :alt="server.region" class="flag-img">
+            <span v-else class="flag-fallback">🏳️</span>
+            <img v-if="getOSImage(server.os)" :key="server.os" :src="workerAsset(getOSImage(server.os))"
+              :alt="getOSName(server.os)" class="os-icon-img" loading="lazy" @error="$event.target.hidden = true">
           </span>
           <span>{{ server.name || 'Loading...' }}</span>
           <span style="color: var(--text-muted);">:~#</span>
@@ -413,12 +412,12 @@
 import { ref, computed, inject, onMounted, onUnmounted, watch, nextTick, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Footer from '@cfsm/components/Footer.vue'
-import OsIcon from '@cfsm/components/OsIcon.vue'
 import LiveConnectionTimeoutModal from '@cfsm/components/LiveConnectionTimeoutModal.vue'
 import { fetchAllHistory, formatBytes as formatKnownBytes, createLiveSocket, getFlagRegionCode, isServerOnline, normalizeLiveSocketTimeoutMinutes } from '@cfsm/utils/api.js'
 import { http, DEFAULT_REQUEST_TIMEOUT_MS, isAdminLoggedIn } from '@cfsm/utils/http'
 import { getTrafficUsageBytes } from '@cfsm/composables/useServerCardData'
-import { getPublicAssetUrl, hasConfiguredApiBase } from '@cfsm/utils/config.js'
+import { getApiBases } from '@cfsm/utils/config.js'
+import { getOSImage, getOSName } from '@cfsm/utils/osIcon.js'
 import Chart from 'chart.js/auto'
 import { t, useTranslation } from '@cfsm/utils/i18n'
 import { CHART, HISTORY } from '@cfsm/utils/constants'
@@ -431,7 +430,8 @@ const route = useRoute()
 const router = useRouter()
 const appConfig = inject('appConfig', null)
 const initialServer = inject('initialServer')
-const adminHref = hasConfiguredApiBase() ? '/#/admin' : '/admin#/admin'
+const adminOrigin = getApiBases()[0]
+const adminHref = (adminOrigin === location.origin ? '' : adminOrigin) + '/admin#/admin'
 const adminLabel = window.farmText('管理后台')
 const demoHistory = inject('demoHistory', null)
 const isShown = key => ![false, 0, '0', 'false'].includes(initialServer.sysConfig?.[key] ?? appConfig?.[key])
@@ -449,6 +449,7 @@ if (!serverId) {
 }
 
 const apiIndex = ref(0)
+const workerAsset = path => new URL('/' + path, getApiBases()[apiIndex.value] || location.origin).href
 const indexParam = route.query.apiIndex
 if (indexParam !== undefined && indexParam !== null && !isNaN(parseInt(indexParam))) {
   apiIndex.value = parseInt(indexParam)

@@ -1,6 +1,10 @@
 (() => {
   const t = message => window.farmText?.(message) || message;
   let loader;
+  window.openMonitorLogin = apiBase => {
+    localStorage.removeItem('jwt_token');
+    location.assign(new URL('/admin#/admin', apiBase));
+  };
   function loadChallenge() {
     if (window.turnstile) return Promise.resolve(window.turnstile);
     if (!loader) loader = new Promise((resolve, reject) => {

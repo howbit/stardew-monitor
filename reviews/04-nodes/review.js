@@ -161,12 +161,17 @@ const systemLogos = [
   [/euleros|huawei/i,'os-huawei.svg'], [/orange\s?pi/i,'os-orange-pi.svg'], [/qnap|\bqts\b/i,'os-qnap.svg'], [/unraid/i,'os-unraid.svg']
 ];
 
+function workerAsset(path) {
+  const base = window.cfsmAdapter?.apiBase;
+  return base && base !== location.origin ? new URL(path, base).href : path;
+}
+
 function systemBadge(node, detailUrl) {
   const os = node.os?.trim();
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
   const fallback = '../../assets/ui/lucide/hard-drive.svg';
-  const src = file ? '../../assets/ui/os-icons/'+file : window.farmAsset?.(fallback) ?? fallback;
+  const src = file ? workerAsset('../../assets/ui/os-icons/' + file) : window.farmAsset?.(fallback) ?? fallback;
   return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="'+nodeText('查看系统版本')+' '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
@@ -341,7 +346,7 @@ function regionFlag(node) {
   if (!/^[A-Z]{2}$/.test(code || '') || !flagNames.of(code)) return '';
   const name = flagNames.of(code);
   const title = [name, nodeText(node.city)].filter((value,index,all) => value && all.indexOf(value) === index).join(' · ');
-  const base = window.cfsmAdapter?.isLive || !node.demo ? '/flags/' : '../../assets/ui/demo-flags/';
+  const base = window.cfsmAdapter?.isLive || !node.demo ? workerAsset('/flags/') : '../../assets/ui/demo-flags/';
   return `<span class="region-flag summary-country" title="${escapeText(title)}"><img alt="${escapeText(name)}" src="${base}${code.toLowerCase()}.svg"></span>`;
 }
 

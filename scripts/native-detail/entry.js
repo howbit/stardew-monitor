@@ -85,17 +85,23 @@ async function start() {
     setLanguage(window.farmLocale === 'zh-CN' ? 'zh' : window.farmLocale)
   ])
   configData = config.data
+  if (status.status === 401) {
+    window.openMonitorLogin(getApiBases()[0])
+    return
+  }
   const demo = !status.data?.id && ![401, 403].includes(status.status) ? await localExample(id) : null
   const server = demo?.server || status.data
   if (!server || String(server.id) !== id) {
     denied = [401, 403].includes(status.status)
     const panel = showMessage(denied ? '节点详情需要登录或访问验证' : '节点不存在或暂时无法读取')
     if (denied) {
+      localStorage.removeItem('turnstile_verified')
+      configData = configData && {...configData, verified: false}
       const actions = document.createElement('div')
       actions.className = 'monitor-access'
       panel.append(actions)
       const base = getApiBases()[0] || location.origin
-      const policy = config.data || await fetch(base + '/api/config', {cache:'no-store', signal:AbortSignal.timeout(15000)})
+      const policy = configData || await fetch(base + '/api/config', {cache:'no-store', signal:AbortSignal.timeout(15000)})
         .then(response => response.ok ? response.json() : null).catch(() => null)
       window.showMonitorAccess(actions, 'auth', policy, base, retry)
     }

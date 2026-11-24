@@ -11,7 +11,7 @@
 **自定义主题 URL（已测试的固定版本）**
 
 ```text
-https://github.com/howbit/stardew-monitor/tree/931080ba8df512344aff85524e2036fd343b7446
+https://github.com/howbit/stardew-monitor/tree/298c90074fed3d037c10ee7f6d7b578df4633f43
 ```
 
 1. 打开自己站点的管理后台，进入 **主题商店**。

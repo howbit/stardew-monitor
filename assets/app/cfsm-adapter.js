@@ -789,7 +789,14 @@
           const sign = document.querySelector('.site-sign strong');
           if (sign && config.site_title) sign.textContent = config.site_title;
         }
-        if ([401,403].includes(response.status)) {
+        if (response.status === 401) {
+          this.disconnect();
+          global.openMonitorLogin(this.apiBase);
+          return;
+        }
+        if (response.status === 403) {
+          if (this.apiBase === location.origin) localStorage.removeItem('turnstile_verified');
+          if (this.siteConfig) this.siteConfig.verified = false;
           this.disconnect();
           this.isLive = false;
           this.rawServers = [];

@@ -244,23 +244,42 @@
   .menu-card .card-readings {padding:10px;}
   .transfer-direction .reading-heading strong {font-size:19px;}
 }
-.heading-right {
-  --tool-size:36px;--glyph-size:24px;--tool-surface:#fff8eb;--tool-line:#c9b792;
+.content-heading {
+  --tool-size:36px;--glyph-size:22px;--tool-surface:#fff8eb;--tool-line:#c9b792;
   --icon:#685849;--selected:#315d43;--tool-active:#dfebd9;--tool-hover:#ede7d8;
 }
-.night .heading-right {
+.night .content-heading {
   --tool-surface:#1c2a3b;--tool-line:#46576a;--icon:#c6d4e2;
   --selected:#b8ebc6;--tool-active:#294738;--tool-hover:#2e3f51;
+}
+.heading-right .node-toolbar,.heading-left .region-tabs,.heading-right .scene-controls {
+  box-sizing:border-box;padding:3px;border:1px solid var(--tool-line);border-radius:8px;
+  background:var(--tool-surface);
 }
 .heading-right .node-toolbar {
   flex-wrap:wrap;
   display:inline-flex;align-items:center;gap:2px;min-width:0;max-width:100%;height:auto;
-  padding:3px;border:1px solid var(--tool-line);border-radius:9px;
-  background:var(--tool-surface);box-shadow:none;overflow:visible;
+  box-shadow:none;overflow:visible;
 }
+.heading-left {gap:12px;}
+.heading-right {gap:8px;margin-inline-start:auto;}
 .heading-left .region-tabs,.heading-right .scene-controls {flex-wrap:wrap;}
-.heading-left .region-tabs {max-width:100%;}
-.heading-right .scene-controls {align-items:center;}
+.heading-left .region-tabs {max-width:100%;gap:2px;}
+.heading-left .region-tab {
+  min-height:var(--tool-size);padding:2px 12px;border:0;border-radius:5px;
+  color:var(--icon);background:transparent;box-shadow:none;line-height:1.2;
+}
+.heading-left .region-tab:is(:hover,:focus-visible) {background:var(--tool-hover);color:var(--selected);}
+.heading-left .region-tab.active {background:var(--selected);color:var(--tool-surface);box-shadow:none;}
+.heading-right .scene-controls {align-items:center;gap:2px;}
+.heading-right #scene-label {
+  height:auto;min-height:var(--tool-size);padding:2px 10px;line-height:1.35;
+  color:var(--icon);border:0;border-radius:0;background:transparent;font-size:12px;
+}
+.heading-right .scene-controls select,.heading-right #return-local {
+  height:var(--tool-size);border:0;border-radius:5px;background:var(--tool-hover);
+  color:var(--icon);box-shadow:none;font-size:12px;
+}
 .heading-right .node-tool {
   box-sizing:border-box;width:var(--tool-size);height:var(--tool-size);padding:0;border:0;border-radius:5px;
   background:transparent;color:var(--icon);box-shadow:none;cursor:pointer;
@@ -268,28 +287,25 @@
 .heading-right .admin-tool,.language-tool {display:grid;place-items:center;flex:none;}
 .heading-right .admin-tool:hover,.language-tool:hover {background:var(--tool-hover);color:var(--selected);}
 .language-tool {position:relative;width:var(--tool-size);height:var(--tool-size);color:var(--icon);border-radius:5px;}
-.language-tool span {font-size:19px;line-height:1;}
 .language-tool select {position:absolute;inset:0;width:100%;height:100%;cursor:pointer;opacity:0;}
 .language-tool:focus-within {outline:2px solid var(--selected);}
 .heading-right button.node-tool {display:grid;place-items:center;flex:none;transition:color .15s ease;}
 .heading-right .node-tool.active {background:var(--tool-active);color:var(--selected);}
-.heading-right button.node-tool::before,.node-toolbar .node-search::before {
-  content:"";width:var(--glyph-size);height:var(--glyph-size);background:currentColor;
-  mask:var(--tool-icon) center / var(--glyph-scale,100%) no-repeat;
+.node-toolbar svg {
+  display:block;width:var(--glyph-size);height:var(--glyph-size);pointer-events:none;
+  fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;
 }
-.node-toolbar [data-view="grid"] {--tool-icon:url("/assets/stardew-b2d3adf859e6/ui/tabler/layout-grid.svg");--glyph-scale:110%;}
-.node-toolbar [data-view="list"] {--tool-icon:url("/assets/stardew-b2d3adf859e6/ui/tabler/table.svg");}
-.heading-right #view-mode {--tool-icon:url("/assets/stardew-b2d3adf859e6/ui/tabler/moon.svg");}
-.night .heading-right #view-mode {--tool-icon:url("/assets/stardew-b2d3adf859e6/ui/tabler/sun.svg");}
+.node-toolbar #view-mode[aria-pressed="false"] .mode-sun,
+.node-toolbar #view-mode[aria-pressed="true"] .mode-moon {display:none;}
 .node-toolbar .node-search {
-  --tool-icon:url("/assets/stardew-b2d3adf859e6/ui/tabler/search.svg");position:relative;display:flex;min-width:0;color:var(--icon);
+  position:relative;display:flex;min-width:0;color:var(--icon);
   margin-left:5px;
 }
 .node-toolbar .node-search::after {
   content:"";position:absolute;left:-4px;top:25%;bottom:25%;width:1px;background:var(--tool-line);
 }
-.node-toolbar .node-search::before {
-  position:absolute;left:calc((var(--tool-size) - var(--glyph-size))/2);top:50%;transform:translateY(-50%);pointer-events:none;
+.node-toolbar .node-search svg {
+  position:absolute;left:calc((var(--tool-size) - var(--glyph-size))/2);top:50%;transform:translateY(-50%);z-index:1;
 }
 .node-toolbar .node-search input {
   min-width:0;font:inherit;font-size:12px;color:transparent;cursor:pointer;
@@ -307,12 +323,12 @@
   .heading-right button.node-tool,.node-toolbar .node-search input {transition:none;}
 }
 @media(max-width:660px) {
+  .landscape-preview .content-heading {--tool-size:44px;}
   .landscape-preview .heading-right {
-    --tool-size:44px;
     display:flex;flex-direction:column;align-items:stretch;
     gap:6px;
   }
-  .landscape-preview .heading-right .view-switch {align-self:flex-end;}
+  .landscape-preview .heading-right .view-switch {align-self:stretch;justify-content:space-between;}
   .heading-right .scene-controls {display:flex;align-items:center;justify-content:space-between;gap:6px;}
   .heading-left .region-tabs .region-tab {flex:1 0 auto;padding-inline:8px;}
   .heading-right #scene-label {

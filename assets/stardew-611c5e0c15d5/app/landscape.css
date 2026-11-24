@@ -1,0 +1,431 @@
+/* Shared geometry for four seasons and both phases; artwork changes independently. */
+/* Reserve the system scrollbar width before the node list is populated. */
+:root { overflow-y: scroll; }
+.landscape-preview .farm-hero{height:350px;max-height:none;aspect-ratio:auto;background:#39e8fd;border:0;box-shadow:none;--brand-width:218px;--weather-width:184px;--face-height:60px}
+.landscape-preview .hero-art{position:absolute;inset:0;display:block;width:100%;max-width:none;height:100%;object-fit:cover;object-position:center bottom;transform:none;filter:none;image-rendering:pixelated}
+.landscape-preview .hero-sky,.landscape-preview .hero-grass-fringe{display:none}
+/* Season-neutral pixel wood frames. Text and the clock stay live and accessible. */
+.landscape-preview .site-sign{position:absolute;z-index:4;left:clamp(22px,3.5vw,64px);top:calc(26px - var(--brand-width)*.183);bottom:auto;width:var(--brand-width);height:calc(var(--brand-width)*860/1828);min-width:0;margin:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none}
+.landscape-preview .site-sign:before,.landscape-preview .site-sign:after{display:none}
+.landscape-preview .sign-frame{position:absolute;inset:0;display:block;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+.landscape-preview .site-sign-copy{position:absolute;inset:43% 9% 13.5%;display:grid;place-items:center;text-align:center;--sign-size:24px}
+.landscape-preview .site-sign strong{min-width:0;max-width:100%;font-family:system-ui,"Microsoft YaHei",sans-serif;font-size:var(--sign-size);line-height:1.12;font-weight:800;letter-spacing:.045em;color:#4b2d13;overflow-wrap:anywhere;text-wrap:balance}
+.landscape-preview .time-sign{position:absolute;z-index:4;top:26px;right:clamp(22px,3.5vw,64px);width:var(--weather-width);height:var(--face-height);min-width:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;color:#4b3421}
+.landscape-preview .time-frame{position:absolute;inset:0;display:block;background:url("/assets/stardew-611c5e0c15d5/ui/estate/clock.png") center / 100% 100% no-repeat;image-rendering:pixelated;pointer-events:none}
+.landscape-preview .time-sign-copy{position:absolute;inset:12% 25% 12% 9%;display:grid;grid-template-columns:auto 1fr;align-content:center;align-items:baseline;gap:1px 6px;text-align:left}
+.landscape-preview .time-sign span#season-time{font-size:10px;line-height:1.4;white-space:nowrap}
+.landscape-preview .time-sign strong{font-size:20px;line-height:1.25}
+.landscape-preview.night .sign-frame,.landscape-preview.night .time-frame{filter:brightness(.88) saturate(.85)}
+/* Two independent transparent silhouettes, never a stretched full-width footer. */
+.landscape-preview .monitor-page .seasonal-footer{display:block;position:relative;width:100%;height:clamp(116px,10.5vw,156px);min-height:0;max-height:none;aspect-ratio:auto;margin:24px 0 0;padding:0 !important;overflow:hidden;border:0 !important;background:transparent !important;box-shadow:none;filter:none}
+.landscape-preview .monitor-page .seasonal-footer:before,.landscape-preview .monitor-page .seasonal-footer:after{display:none !important}
+.landscape-preview .footer-flora,.landscape-preview .footer-fence{position:absolute;bottom:0;display:block;max-width:none;margin:0;pointer-events:none}
+.landscape-preview .footer-flora{left:0;width:46%;max-width:620px}
+.landscape-preview .footer-fence{right:0;width:46%;max-width:600px}
+.landscape-preview .footer-flora img,.landscape-preview .footer-fence img{display:block;width:100%;max-width:100%;height:auto;max-height:none;object-fit:contain;image-rendering:pixelated}
+.landscape-preview .footer-flora img{transform:translateY(4.5%)}
+.landscape-preview .footer-fence img{transform:translate(1.2%,4.7%)}
+.landscape-preview .footer-credit{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:max-content;max-width:90%;margin:0;padding:0 !important;z-index:3}
+.landscape-preview .footer-credit .credit-link{font-size:11px;letter-spacing:0;font-weight:650;white-space:nowrap;text-shadow:none}
+.landscape-preview.night .farm-hero{background:#0a1750}
+.landscape-preview[data-season="summer"] .farm-hero{background:#12cafd}
+.landscape-preview[data-season="fall"] .farm-hero{background:#7ad5fc}
+.landscape-preview[data-season="winter"] .farm-hero{background:#68c2fc}
+.landscape-preview.night[data-season="summer"] .farm-hero{background:#09164f}
+.landscape-preview.night[data-season="fall"] .farm-hero{background:#091650}
+.landscape-preview.night[data-season="winter"] .farm-hero{background:#0a1350}
+.landscape-preview.night :is(.footer-flora,.footer-fence) img{filter:brightness(.56) saturate(.72) hue-rotate(32deg)}
+.landscape-preview.night[data-season="fall"] :is(.footer-flora,.footer-fence) img{filter:brightness(.55) saturate(.78) hue-rotate(-6deg)}
+.landscape-preview.night[data-season="winter"] :is(.footer-flora,.footer-fence) img{filter:brightness(.66) saturate(1.18)}
+@media(min-width:1500px){.scene-music{top:28px}}
+@media(max-width:900px){
+  .landscape-preview .farm-hero{height:340px;--brand-width:198px;--weather-width:166px;--face-height:55px}
+  .landscape-preview .hero-art{height:240px;top:auto;bottom:0;object-position:64% bottom}
+  .landscape-preview .site-sign{left:20px}
+  .landscape-preview .site-sign-copy{--sign-size:22px}
+  .landscape-preview .time-sign{right:20px}
+  .landscape-preview .time-sign strong{font-size:19px}
+  .landscape-preview .footer-flora,.landscape-preview .footer-fence{width:50%}
+  .landscape-preview .footer-credit{top:10px;bottom:auto}
+}
+@media(max-width:660px){
+  .landscape-preview .farm-hero{height:320px;--brand-width:clamp(154px,46vw,180px);--weather-width:clamp(116px,36.8vw,144px);--face-height:calc(var(--brand-width)*.28)}
+  .landscape-preview .hero-art{object-position:68% bottom}
+  .landscape-preview .site-sign{left:14px;top:calc(24px - var(--brand-width)*.183)}
+  .landscape-preview .site-sign-copy{--sign-size:20px}
+  .landscape-preview .time-sign{top:24px;right:14px}
+  .landscape-preview .time-sign strong{font-size:17px}
+  .landscape-preview .time-sign span#season-time{font-size:9px}
+  .landscape-preview .monitor-page .seasonal-footer{height:114px;margin-top:16px}
+  .landscape-preview .footer-credit{top:14px}
+  .landscape-preview .footer-credit .credit-link{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.landscape-preview .seasonal-particles span{animation:none;display:none}}
+
+/* The backdrop and plants share ONE 3:1 coordinate plane, including cover-crop. */
+.landscape-preview .hero-viewport{position:absolute;inset:0;overflow:hidden}
+.landscape-preview .hero-scene{position:absolute;bottom:0;left:50%;width:max(100%,1050px);aspect-ratio:3 / 1;transform:translateX(-50%)}
+.landscape-preview .hero-scene .hero-art{inset:0;width:100%;height:100%;object-position:center bottom}
+.landscape-preview .crop-layer{position:absolute;inset:0;z-index:2;display:none}
+.landscape-preview[data-season="spring"] .crop-layer[data-crop-season="spring"]{display:block}
+.landscape-preview[data-season="summer"] .crop-layer[data-crop-season="summer"]{display:block}
+.landscape-preview .crop-plant{position:absolute;display:block;height:auto;max-width:none;image-rendering:pixelated;user-select:none}
+.landscape-preview.night .crop-layer{filter:brightness(.56) saturate(.72) hue-rotate(10deg)}
+@media(min-width:1500px){.landscape-preview .hero-scene{width:max(100%,1200px)}}
+@media(max-width:900px){.landscape-preview .hero-viewport{top:auto;height:240px}.landscape-preview .hero-scene{width:max(100%,720px);left:64%;transform:translateX(-64%)}}
+@media(max-width:660px){.landscape-preview .hero-scene{left:68%;transform:translateX(-68%)}}
+
+/* Keep the same frame on every seasonal plate, with room for sky on desktop. */
+@media(min-width:901px){
+  .landscape-preview .farm-hero{height:max(350px,calc(22.5vw + 70px))}
+}
+
+/* Local native-PNG rail repairs. The approved masters stay visible elsewhere. */
+.hero-rail-repair{display:none;pointer-events:none;image-rendering:pixelated}
+.landscape-preview[data-season="spring"] .hero-rail-repair{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.hero-rail-repair .rail-night{display:none}
+.landscape-preview.night .hero-rail-repair .rail-day{display:none}
+.landscape-preview.night .hero-rail-repair .rail-night{display:block}
+
+/* Postcard artwork contains its own foreground and nighttime lighting. */
+.landscape-preview[data-postcard] :is(.hero-rail-repair, .crop-layer[data-crop-season], .seasonal-particles) {
+  display: none;
+}
+.landscape-preview[data-postcard="spring-day"] .farm-hero { background-color: #9edff0; }
+.landscape-preview[data-postcard="summer-night"] .farm-hero { background-color: #15164f; }
+.landscape-preview[data-postcard] :is(.footer-flora, .footer-fence) {
+  max-width: 445px;
+}
+.landscape-preview[data-postcard] :is(.footer-flora, .footer-fence) img {
+  transform: none;
+}
+.landscape-preview.night[data-postcard="summer-night"] :is(.footer-flora, .footer-fence) img {
+  filter: none;
+}
+.landscape-preview[data-postcard="summer-night"] .footer-flora { max-width: 380px; }
+@media (max-width: 900px) {
+  .landscape-preview[data-postcard] .hero-scene {
+    left: var(--postcard-focus);
+    transform: translateX(calc(0% - var(--postcard-focus)));
+  }
+  .landscape-preview[data-postcard="spring-day"] { --postcard-focus: 85%; }
+  .landscape-preview[data-postcard="summer-night"] { --postcard-focus: 35%; }
+}
+
+/* Positions are relative to the same 2172 x 724 plate as the static artwork. */
+.hero-scene .bay-water, .hero-scene .bay-swimmers {
+  position: absolute;
+  bottom: 0;
+  height: auto;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+.hero-scene .bay-water { z-index: 2; left: 49.3554%; width: 44.9355%; }
+.hero-scene .bay-swimmers { z-index: 3; left: 28.7293%; width: 65.5617%; }
+.farm-hero .bay-motion-toggle {
+  position: absolute;
+  z-index: 4;
+  bottom: 12px;
+  right: clamp(14px, 3.5vw, 64px);
+  padding: 5px 11px;
+  border: 1px solid #aac5cc86;
+  border-radius: 4px;
+  color: #e3f0f1;
+  background: #0d2338e6;
+  font: 12px/1.55 system-ui, sans-serif;
+  cursor: pointer;
+}
+.bay-motion-toggle:focus-visible { outline: 2px solid #fff1c3; outline-offset: 2px; }
+.farm-hero :is(.bay-water, .bay-swimmers, .bay-motion-toggle)[hidden] { display: none; }
+
+.landscape-preview[data-farm-art="native"][data-season] .farm-hero {
+  background: #508c28;
+}
+.landscape-preview.night[data-farm-art="native"][data-season] .farm-hero {
+  background: #253b34;
+}
+.landscape-preview[data-farm-art="native"] .hero-viewport {
+  inset: 0;
+  height: auto;
+}
+.landscape-preview[data-farm-art="native"] .hero-scene {
+  inset: 0;
+  width: 100%;
+  aspect-ratio: auto;
+  transform: none;
+}
+.landscape-preview[data-farm-art="native"] .hero-scene .hero-art {
+  inset: var(--estate-y, 0px) auto auto var(--estate-x, 0px);
+  width: var(--estate-width, 100%);
+  height: var(--estate-height, 100%);
+  object-position: 46% 48%;
+}
+.landscape-preview[data-farm-art="native"] .scene-music {
+  color: #fff7dc;
+  text-shadow: 0 1px 2px #172817, 0 0 5px #172817;
+}
+.landscape-preview[data-farm-art="native"][data-season="winter"]:not(.night) .scene-music {
+  color: #183448;
+  text-shadow: 0 0 4px #effbff;
+}
+.landscape-preview[data-farm-art="native"] .music-actions {
+  filter: drop-shadow(0 1px 1px #172817);
+}
+.landscape-preview[data-farm-art="native"] #music-toggle:hover {
+  color: #ffeeaa;
+}
+.landscape-preview[data-farm-art="native"][data-season="winter"]:not(.night) #music-toggle:hover {
+  color: #284d69;
+}
+.landscape-preview[data-farm-art="native"] :is(.hero-rail-repair, .crop-layer[data-crop-season], .seasonal-particles) {
+  display: none;
+}
+
+.estate-world {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  image-rendering: pixelated;
+  touch-action: pan-y;
+  user-select: none;
+}
+.estate-world[hidden] { display: none; }
+.estate-world > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  pointer-events: none;
+}
+.estate-hit-layer {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 1728px;
+  height: 464px;
+  transform-origin: top left;
+}
+.estate-world button {
+  position: absolute;
+  inset: 0 auto auto 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.estate-animal:focus-visible { outline: 1px dashed #fff9bc; outline-offset: 2px; }
+.estate-pond:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 44% 35% 29%;
+  border: 2px dashed #fff9bc;
+  border-radius: 50%;
+}
+.estate-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.landscape-preview[data-farm-art="native"] .hero-viewport:has(.estate-world:not([hidden])) { overflow: clip; }
+.landscape-preview[data-farm-art="native"] .monitor-page .seasonal-footer {
+  height: clamp(86px, 8vw, 132px);
+  background: transparent !important;
+}
+.landscape-preview[data-farm-art="native"] :is(.footer-flora, .footer-fence) {
+  width: min(38%, 412px);
+}
+.landscape-preview[data-farm-art="native"][data-season] :is(.footer-flora, .footer-fence) img {
+  transform: none;
+  filter: none;
+}
+@media (min-width: 661px) and (max-width: 900px) {
+  .landscape-preview[data-farm-art="native"][data-season] .farm-hero { height:clamp(350px,calc(840px - 54.5vw),480px); }
+  .landscape-preview[data-farm-art="native"] .scene-music { top: 20px; width: calc(100% - 420px); }
+}
+@media (max-width: 660px) {
+  .landscape-preview[data-farm-art="native"][data-season] .farm-hero {
+    height: clamp(320px, calc(72vw + 88px), 480px);
+  }
+  .landscape-preview[data-farm-art="native"][data-season] .scene-music {
+    top:var(--board-top);bottom:auto;width:calc(100% - 2 * var(--board-edge));
+    display:grid;grid-template-rows:var(--board-height) auto;place-items:center;row-gap:2px;
+    color:#fff9e4;
+    text-shadow:-1px 0 #21301c,1px 0 #21301c,0 -1px #21301c,0 1px #21301c,0 2px 3px #152517;
+    pointer-events:none;
+  }
+  .landscape-preview[data-farm-art="native"][data-season] .scene-music #music-toggle { pointer-events:auto;color:inherit; }
+  .landscape-preview[data-farm-art="native"] #music-current { font-size: 12px; }
+  .landscape-preview[data-farm-art="native"] .music-track-copy {grid-area:2 / 1;max-width:100%;}
+  .landscape-preview[data-farm-art="native"] #music-status { margin-bottom:0;opacity:1; }
+  .landscape-preview[data-farm-art="native"] .music-actions {
+    grid-area:1 / 1;width:min(108px,calc(100% - 2 * var(--board-width) - 4px));
+    margin:0;gap:0;filter:drop-shadow(0 1px 2px #172817);
+  }
+  .landscape-preview[data-farm-art="native"] #music-toggle { width:44px;height:44px; }
+  .landscape-preview[data-farm-art="native"] .monitor-page .seasonal-footer { height: clamp(76px, 18vw, 100px); }
+  .landscape-preview[data-farm-art="native"] :is(.footer-flora, .footer-fence) { width: 44%; }
+  .landscape-preview[data-farm-art="native"] .footer-credit { top: 4px; bottom: auto; }
+}
+
+/* The HUD uses single-color symbols on a 24-unit grid, like the music controls. */
+.landscape-preview { --menu-art:url("/assets/stardew-611c5e0c15d5/ui/estate/panel.png"); --sun:url("/assets/stardew-611c5e0c15d5/ui/pixelarticons/sun.svg"); --moon:url("/assets/stardew-611c5e0c15d5/ui/pixelarticons/moon.svg"); --sky-symbol:var(--sun); }
+.landscape-preview.night { --menu-art:url("/assets/stardew-611c5e0c15d5/ui/estate/panel-night.png"); --sky-symbol:var(--moon); }
+.landscape-preview[data-farm-art="native"] .farm-hero {
+  --board-width:clamp(182px,20vw,232px);--board-height:60px;
+  --board-rim:8px;--board-inset:14px;
+  --board-top:clamp(14px,1.6vw,26px);--board-edge:clamp(14px,3.5vw,64px);
+}
+@media(min-width:901px) {
+  .landscape-preview[data-farm-art="native"] .scene-music {
+    top:clamp(6px,calc(5vw - 64px),28px);
+  }
+  .landscape-preview[data-farm-art="native"] .farm-hero {
+    --board-top:6px;--board-edge:clamp(16px,2vw,40px);--pasture-roof-gap:8px;
+    /* Show a little more of the existing tree line on laptop-width displays. */
+    height:max(350px,calc(22.5vw + 70px + clamp(0px, 110px - 6vw, 40px)));
+  }
+}
+.landscape-preview[data-farm-art="native"] :is(.site-sign,.time-sign) {
+  top:var(--board-top);width:var(--board-width);height:var(--board-height);
+}
+.landscape-preview[data-farm-art="native"] .site-sign {left:var(--board-edge);}
+/* Keep the original hanging chains; both wooden faces use the same fixed-width pixel rim. */
+.landscape-preview[data-farm-art="native"] .site-sign .sign-frame {
+  top:calc(var(--board-height)*-31/48);height:calc(var(--board-height)*85/48);
+  clip-path:inset(0 0 63.5294%);
+}
+.landscape-preview[data-farm-art="native"] .site-sign::before,
+.landscape-preview[data-farm-art="native"] .time-frame {
+  content:"";display:block;position:absolute;inset:0;width:auto;height:auto;
+  border:solid transparent;border-width:var(--board-rim);
+  border-image:url("/assets/stardew-611c5e0c15d5/ui/estate/clock.png") 12 fill / 1 stretch;
+  background:none;image-rendering:pixelated;pointer-events:none;
+}
+.landscape-preview[data-farm-art="native"].night .site-sign::before {filter:brightness(.88) saturate(.85);}
+.landscape-preview[data-farm-art="native"] .site-sign-copy {
+  inset:var(--board-rim) var(--board-inset);
+}
+.landscape-preview[data-farm-art="native"] .time-sign {
+  right:var(--board-edge);display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;column-gap:6px;padding:var(--board-rim) var(--board-inset);
+}
+.landscape-preview[data-farm-art="native"] .time-sign-copy {
+  position:relative;inset:auto;display:grid;grid-template-columns:max-content 1fr;
+  align-content:center;align-items:baseline;gap:2px 4px;min-width:0;text-align:left;
+}
+.landscape-preview[data-farm-art="native"] .time-sign #farm-weather {
+  position:relative;inset:auto;transform:none;width:32px;height:36px;
+}
+.landscape-preview .time-sign span#season-time {grid-column:1/-1;font-size:13px;line-height:1.2;font-weight:650;}
+.landscape-preview .time-sign strong {font-size:21px;line-height:1.1;}
+.landscape-preview .time-sign #farm-temperature {font-size:16px;line-height:1.1;font-weight:700;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+@media(max-width:660px) {
+  .landscape-preview .time-sign-copy {inset:10% 23% 10% 8%;column-gap:3px;}
+  .landscape-preview .time-sign #farm-weather {right:4%;width:26px;height:36px;}
+  .landscape-preview[data-farm-art="native"] .farm-hero {
+    --board-edge:6px;--board-top:8px;--board-width:min(196px,calc((100% - 2 * var(--board-edge) - 48px) / 2));
+    --board-height:clamp(56px,13vw,62px);--board-rim:7px;--board-inset:10px;
+  }
+  .landscape-preview[data-farm-art="native"] .time-sign {column-gap:2px;}
+  .landscape-preview[data-farm-art="native"] .time-sign-copy {column-gap:2px;}
+  .landscape-preview .time-sign span#season-time {font-size:11px;}
+  .landscape-preview .time-sign strong {font-size:18px;}
+  .landscape-preview .time-sign #farm-temperature {font-size:13px;}
+  .landscape-preview[data-farm-art="native"] .time-sign #farm-weather {width:22px;}
+  .landscape-preview .time-sign #farm-weather::after {width:18px;height:18px;}
+}
+.landscape-preview[data-weather="cloud"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#cloud"); }
+.landscape-preview[data-weather="fog"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#fog"); }
+.landscape-preview[data-weather="rain"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#rain"); }
+.landscape-preview[data-weather="storm"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#storm"); }
+.landscape-preview[data-weather="snow"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#snow"); }
+.landscape-preview[data-weather="wind"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#wind"); }
+.landscape-preview .time-sign .weather-symbol {
+  position:absolute;top:50%;right:8%;transform:translateY(-50%);display:grid;place-items:center;
+  width:36px;height:36px;border:0;padding:0;box-shadow:none;background:transparent;color:#573516;cursor:pointer;
+}
+.landscape-preview .weather-symbol::after {
+  content:"";width:24px;height:24px;background:currentColor;mask:var(--icon) center / contain no-repeat;
+}
+.landscape-preview .weather-symbol { --icon:var(--sky-symbol); }
+.landscape-preview .time-sign .weather-symbol:focus-visible { outline:2px solid currentColor;outline-offset:-3px; }
+.landscape-preview .weather-symbol:disabled { opacity:1;cursor:default; }
+#farm-temperature {color:inherit;text-decoration:none;}
+#farm-temperature[href] {pointer-events:auto;text-decoration:underline dotted;text-underline-offset:3px;}
+.landscape-preview #music-toggle .music-symbol { mask-image:url("/assets/stardew-611c5e0c15d5/ui/estate/play.png"); }
+.landscape-preview #music-toggle[aria-pressed="true"] .music-symbol { mask-image:url("/assets/stardew-611c5e0c15d5/ui/estate/pause.png"); }
+.landscape-preview .search input {background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/search.png");image-rendering:pixelated;}
+.landscape-preview .stat-icon .transfer-arrows { display:none; }
+.landscape-preview .monitor-page .monitor-card {
+  border-image:var(--menu-art) 12 / 7px stretch;
+  background:#fcebc6 url("/assets/stardew-611c5e0c15d5/ui/estate/paper.png") center / 100% 100% no-repeat;
+}
+.landscape-preview.night .monitor-page .monitor-card {
+  background:#242f58 url("/assets/stardew-611c5e0c15d5/ui/estate/paper-night.png") center / 100% 100% no-repeat;
+}
+.landscape-preview .monitor-card .building-base,.stardew-modal-portrait img { image-rendering:pixelated; }
+.landscape-preview .farm-warp {
+  flex:none; width:36px;height:32px;padding:0;cursor:pointer;image-rendering:pixelated;
+  border:4px solid transparent;border-image:var(--menu-art) 12 fill / 4px stretch;
+  position:relative; background:none;
+}
+.farm-warp::after { content:"";position:absolute;inset:0;background:url("/assets/stardew-611c5e0c15d5/ui/estate/warp.png") center / 22px 22px no-repeat; }
+.farm-warp:is(:focus-visible,:hover,[aria-pressed="true"]) { outline:2px solid #61a75b;outline-offset:1px; }
+.card-footer-row .farm-warp { order:1; }
+.view-list .col-host { display:flex;align-items:center;gap:5px; }
+.landscape-preview .view-list .farm-warp { width:28px;height:28px; }
+.landscape-preview .monitor-card .node-status-badge {flex-direction:column;align-items:flex-end;gap:2px;}
+.report-age {font-size:10px;font-weight:550;color:#6d5943;}
+.night .report-age {color:#c8c5d6;}
+.expiry-notice {font-size:10px;color:#973e25;font-weight:680;}
+.night .expiry-notice {color:#ffbc97;}
+.landscape-preview .monitor-card .node-identity .name {margin:0;font-size:15px;overflow-wrap:anywhere;line-height:1.25;}
+.landscape-preview .monitor-card .meter-row {row-gap:1px;}
+.meter-capacity {grid-column:2/-1;font-size:10px;opacity:.8;font-variant-numeric:tabular-nums;}
+.landscape-preview .period-traffic {display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 0 8px;font-size:11px;}
+.period-traffic strong {font-variant-numeric:tabular-nums;text-align:right;}
+.landscape-preview .route-pill {min-width:0;overflow-wrap:anywhere;}
+.landscape-preview button.route-pill {cursor:pointer;font-family:inherit;}
+.landscape-preview button.route-pill[aria-pressed="true"] {outline:1px solid currentColor;outline-offset:-1px;}
+.landscape-preview .route-pill small {font-size:10px;}
+.landscape-preview .route-pill strong {font-size:11px;}
+.landscape-preview .route-history {width:74px;height:20px;vertical-align:middle;}
+.landscape-preview .route-summary,.route-no-data {font-size:10px;}
+.landscape-preview .card-footer-row {gap:8px;}
+.landscape-preview .card-footer-row .details-link {margin-left:auto;}
+.landscape-preview .cards.list-view .monitor-card {grid-template-columns:minmax(94px,1.2fr) minmax(76px,.9fr) minmax(105px,1.7fr) repeat(4,minmax(40px,.6fr)) repeat(3,minmax(64px,.9fr));}
+.landscape-preview .view-list .list-col {display:flex;flex-direction:column;align-items:flex-start;font-variant-numeric:tabular-nums;}
+.landscape-preview .view-list .list-col small {font-size:10px;opacity:.78;}
+.landscape-preview .view-list .node-status-badge {align-items:flex-start;}
+.landscape-preview .view-list .node-sub {max-width:100%;}
+@media(max-width:900px) {
+  .landscape-preview .cards.list-view .monitor-card {grid-template-columns:repeat(4,minmax(0,1fr));padding:10px;gap:8px;}
+  .landscape-preview .view-list .col-host,.landscape-preview .view-list .col-place {grid-column:span 2;}
+  .landscape-preview .view-list .node-status-badge {grid-column:span 2;align-items:flex-end;}
+}
+@media(max-width:660px) {
+  .landscape-preview .heading-right .view-switch {display:inline-flex;align-self:flex-start;}
+  .landscape-preview .meter-capacity {display:none;}
+}
+.farm-weather-layer { position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none; }
+.farm-weather-layer i { display:none;position:absolute;top:-20px;width:14px;height:16px;background:center / contain no-repeat;image-rendering:pixelated; }
+[data-weather="cloud"] .farm-weather-layer { background:rgba(67,82,112,.09); }
+[data-weather="fog"] .farm-weather-layer { background:rgba(191,207,214,.28); }
+:is([data-weather="rain"],[data-weather="storm"]) .farm-weather-layer { background:rgba(43,61,91,.16); }
+:is([data-weather="rain"],[data-weather="storm"],[data-weather="snow"],[data-weather="wind"]) .farm-weather-layer i {
+  display:block;animation:farm-precipitation calc(var(--speed)*1.2s) var(--delay) linear infinite;
+  background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/raindrop.png");
+}
+[data-weather="snow"] .farm-weather-layer i { width:12px;background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/snowflake.png");animation-duration:calc(var(--speed)*5s); }
+[data-weather="wind"] .farm-weather-layer i { width:9px;background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/leaf.png");animation-duration:calc(var(--speed)*5.5s); }
+[data-weather="wind"][data-season="spring"] .farm-weather-layer i { background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/petal.png"); }
+@keyframes farm-precipitation { to { top:102%;transform:translateX(-48px); } }
+@media(prefers-reduced-motion:reduce) { .farm-weather-layer i { animation:none !important;display:none !important; } }
+

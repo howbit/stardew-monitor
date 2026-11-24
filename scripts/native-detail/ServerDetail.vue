@@ -1495,11 +1495,12 @@ const loadAllHistory = async (hours) => {
     })
   } catch (e) {
     if (request !== historyRequest) return
-    if (e && e.status === 401) {
-      showLoginModal.value = true
-      currentHours.value = REALTIME_HISTORY_HOURS
+    if (e?.status === 401) return window.openMonitorLogin(adminOrigin)
+    if (e?.status === 403) {
       historyLoaded.value = true
-      return
+      return emit('reauth', () => {
+        if (!disposed && hours === currentHours.value) return loadAllHistory(hours)
+      })
     }
 
     if (e && e.message === 'databaseUpgradeRequired') {
@@ -1834,6 +1835,7 @@ const fetchCurrentStatus = async (incomingData, options = {}) => {
 }
 
 const setTimeRange = (hours) => {
+  if (currentHours.value === hours) return
   clearLatestReportReplayTimers()
   if (hours > 24 && !workerToken(adminOrigin)) {
     showLoginModal.value = true
@@ -1887,7 +1889,8 @@ const handleVisibility = async () => {
     try {
       const response = await requestWorker(adminOrigin, '/api/server?id=' + encodeURIComponent(serverId))
       if (disposed || document.hidden) return
-      if ([401, 403].includes(response.status)) return emit('reauth')
+      if (response.status === 401) return window.openMonitorLogin(adminOrigin)
+      if (response.status === 403) return emit('reauth', handleVisibility)
       if (response.ok) {
         const snapshot = await response.json()
         if (!disposed && String(snapshot?.id) === String(serverId)) await fetchCurrentStatus(snapshot)

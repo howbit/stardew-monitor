@@ -20,7 +20,46 @@
     const grid = document.createElement('div');
     grid.className = 'house-choices';
     const id = node.rawId || node.id;
-    function choose(building) {
+    const site = document.createElement('label');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    site.append(checkbox, window.farmText('保存为本站默认小屋'));
+    site.hidden = !node.serverId || !window.farmWorkers?.workerToken(node.apiBase);
+    const status = document.createElement('p');
+    status.setAttribute('role','status');
+    status.hidden = true;
+    const access = document.createElement('div');
+    access.className = 'monitor-access';
+    access.hidden = true;
+    async function choose(building) {
+      if (!site.hidden && checkbox.checked) {
+        grid.inert = true;
+        actions.inert = true;
+        status.hidden = true;
+        try {
+          await window.cfsmAdapter.saveSiteBuilding(node, building);
+          dialog.close();
+        } catch (error) {
+          if (error.status === 401) return window.openMonitorLogin(node.apiBase);
+          if (error.status === 403) {
+            window.farmWorkers.clearWorkerProof(node.apiBase);
+            const config = await window.farmWorkers.configFor(node.apiBase);
+            if (window.farmWorkers.turnstileEnabled(config)) {
+              window.showMonitorAccess(access, 'auth', {...config, verified:false}, node.apiBase, async () => {
+                window.showMonitorAccess(access, 'ready', config, node.apiBase, null);
+                await choose(building);
+              });
+              return;
+            }
+          }
+          status.textContent = window.farmText('无法保存本站小屋，请重试。');
+          status.hidden = false;
+        } finally {
+          grid.inert = false;
+          actions.inert = false;
+        }
+        return;
+      }
       window.cfsmAdapter.setBuildingOverride(id, building);
       dialog.close();
     }
@@ -42,8 +81,9 @@
       grid.append(b);
     }
     actions.append(button(window.farmText('自动分配'), () => choose(null)), button(window.farmText('关闭'), () => dialog.close()));
-    dialog.append(heading,grid,actions);
+    dialog.append(heading,grid,site,status,access,actions);
     dialog.addEventListener('close', () => {
+      if (node.apiBase) window.showMonitorAccess?.(access, 'ready', null, node.apiBase, null);
       dialog.remove();
       if (trigger.isConnected) trigger.focus();
       else Array.from(document.querySelectorAll('.building-picker')).find(b => b.dataset.nodeId === id)?.focus();

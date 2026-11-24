@@ -5,11 +5,13 @@
   let preference;
   try { preference = localStorage.getItem(key); } catch {}
   const requested = new URL(location.href).searchParams.get('lang') || preference;
-  const language = locales.includes(requested) ? requested : 'zh-CN';
+  let language = locales.includes(requested) ? requested : 'zh-CN';
   document.documentElement.lang = language;
 
   // Keys are the original interface copy. Values inserted into a message are never translated.
   const messages = {
+    '保存为本站默认小屋':['Set as the site default','サイトの既定の小屋にする'],
+    '无法保存本站小屋，请重试。':['Could not save the site cabin. Try again.','小屋の設定を保存できませんでした。もう一度お試しください。'],
     '重新连接':['Reconnect','再接続'], '验证访问':['Verify access','アクセス認証'],
     '连接中断，显示上次同步的数据。':['Connection interrupted. Showing the last synced data.','接続が途切れました。最終同期時のデータを表示しています。'],
     '实时连接已按站点设置暂停。':['Live updates paused according to site settings.','サイトの設定によりリアルタイム接続を一時停止しました。'],
@@ -98,6 +100,16 @@
   }
   window.farmText = t;
   window.farmLocale = language;
+  window.applyFarmSiteConfig = config => {
+    const preferred = config?.preferred_theme;
+    window.farmPreferredNight = preferred === 'dark' ? true : preferred === 'light' ? false : null;
+    if (!locales.includes(requested) && config?.default_language) {
+      const name = config.default_language === 'auto' ? navigator.language : config.default_language;
+      const selected = name.toLowerCase().split('-')[0];
+      language = selected === 'zh' ? 'zh-CN' : selected === 'ja' ? 'ja' : 'en';
+    }
+    document.documentElement.lang = window.farmLocale = language;
+  };
 
   window.bindFarmLanguage = () => {
     const select = document.querySelector('#theme-language');

@@ -1,6 +1,7 @@
 """Exercise the zipped theme with same-origin CFSM responses in an isolated browser."""
 
 import mimetypes
+import json
 import os
 import re
 import sys
@@ -52,12 +53,16 @@ def check(archive, browser):
     require_login = False
     sockets = []
     visits = []
+    verification_headers = []
+    option_writes = []
 
     def serve(route):
         url = urlsplit(route.request.url)
         path = unquote(url.path)
         if url.hostname == 'monitor.test':
             visits.append((path, route.request.resource_type))
+            if path.startswith('/api/'):
+                verification_headers.append((path, route.request.headers.get('x-turnstile-verified')))
         if url.hostname == 'api.open-meteo.com':
             return route.fulfill(json={'current': {'weather_code': 3, 'temperature_2m': 20}})
         if url.hostname == 'challenges.cloudflare.com':
@@ -86,6 +91,13 @@ def check(archive, browser):
             node_id = parse_qs(url.query)['id'][0]
             node = next((item for item in nodes if item['id'] == node_id), None)
             return route.fulfill(json=node or {}, status=200 if node else 404)
+        if path == '/api/theme_options':
+            assert route.request.headers.get('authorization') == 'Bearer fixture-jwt'
+            assert route.request.headers.get('x-turnstile-verified') == 'unit-proof'
+            posted = route.request.post_data_json['theme_options']
+            option_writes.append(posted)
+            theme_options.update(posted)
+            return route.fulfill(json={'theme_options': posted})
         if path == '/admin':
             return route.fulfill(body='CFSM admin', content_type='text/html')
         if path == '/api/history/all':
@@ -145,6 +157,10 @@ def check(archive, browser):
     expect(page.locator('.host-name')).to_contain_text(NODE['name'])
     expect(page.locator('.history-note')).to_have_text('暂无数据')
     expect(page.locator('.time-btn')).to_have_count(9)
+    selected_history = len(history_requests)
+    page.locator('.time-btn.active').click()
+    page.wait_for_timeout(150)
+    assert len(history_requests) == selected_history
     check_system_fonts(page, ['.host-name > span:nth-last-child(2)', '.sysinfo-value', '.time-btn.active'])
     assert page.url.endswith('#/server/probe-1')
     assert any('/ServerPage-' in path for path, _ in visits)
@@ -462,6 +478,17 @@ def check(archive, browser):
             expect(page.locator('.net-up').first).to_contain_text('—')
             expect(page.locator('.chart-current-value').nth(0)).to_have_text('0.0%')
             expect(page.locator('.chart-current-value').nth(1)).to_have_text('—')
+            page.evaluate("localStorage.setItem('turnstile_verified', 'expired-fixture-proof')")
+            page.get_by_role('button', name='30m', exact=True).click()
+            expect(page.get_by_role('button', name='验证访问')).to_be_visible()
+            assert page.evaluate("localStorage.getItem('turnstile_verified')") is None
+            expect(page.locator('.host-name')).to_contain_text('同名')
+            page.get_by_role('button', name='验证访问').click()
+            page.get_by_role('button', name='Complete test challenge').click()
+            expect(page.locator('.detail-access')).to_be_hidden()
+            expect(page.locator('.time-btn.active')).to_have_text('30m')
+            expect(page.locator('.history-note')).to_be_hidden()
+            assert history_requests[-1] == ('probe-1', '0.5')
             for width in (320,390,480):
                 page.set_viewport_size({'width':width,'height':844})
                 assert page.locator('.sysinfo-grid').evaluate("el=>getComputedStyle(el).gridTemplateColumns.split(' ').length") == 2
@@ -478,12 +505,25 @@ def check(archive, browser):
         page.goto(SITE + '/')
         expect(page).to_have_url(SITE + '/admin#/admin')
         assert page.evaluate("localStorage.getItem('jwt_token')") is None
-        page.evaluate("localStorage.setItem('jwt_token', 'fixture-jwt')")
+        page.evaluate("""() => {
+            localStorage.setItem('jwt_token', 'fixture-jwt');
+            localStorage.setItem('turnstile_verified', 'expired-fixture-proof');
+        }""")
+        observed = len(verification_headers)
         page.goto(SITE + '/')
         if require_proof:
             page.get_by_role('button', name='验证访问').click()
             page.get_by_role('button', name='Complete test challenge').click()
         expect(page.locator('#cards article')).to_have_count(1)
+        if not require_proof:
+            assert verification_headers[observed:observed + 2] == [('/api/config', None), ('/api/servers', None)]
+        else:
+            page.locator('.view-opt[data-view="grid"]').click()
+            page.locator('.building-picker').click()
+            page.get_by_role('checkbox', name='保存为本站默认小屋').check()
+            page.locator('.house-choices button').first.click()
+            expect(page.locator('.house-dialog')).to_have_count(0)
+            assert len(option_writes) == 1 and option_writes[0]['stardew_buildings']['probe-1']
         page.locator('a.name').click()
         expect(page.locator('.host-name')).to_contain_text('同名')
     assert not missing, missing
@@ -495,7 +535,7 @@ def check_multiple_workers(archive, browser):
     secondary = 'https://other.test'
     monitors = {'monitor.test': 'First Worker', 'other.test': 'Second Worker'}
     page = browser.new_page()
-    visits, subscriptions = [], {}
+    visits, subscriptions, sockets = [], {}, {}
 
     def serve(route):
         url = urlsplit(route.request.url)
@@ -507,8 +547,9 @@ def check_multiple_workers(archive, browser):
             node = dict(NODE, name=monitors[url.hostname])
             # Shared ID detects cross-site identity bugs and wrongly routed detail links.
             extra = dict(NODE, id='only-' + url.hostname)
-            payload = {'/api/config': {'site_title': monitors[url.hostname], 'is_public': True},
-                       '/api/servers': {'servers': [node, extra]}, '/api/server': node,
+            payload = {'/api/config': {'site_title': monitors[url.hostname], 'is_public': True,
+                                      'default_language': 'en', 'preferred_theme': 'dark'},
+                       '/api/servers': {'servers': [node, extra], 'stats': {'total': 3, 'online': 2, 'offline': 1}}, '/api/server': node,
                        '/api/history/all': []}[url.path]
             return route.fulfill(json=payload, headers=headers)
         if url.path.startswith(('/os-icons/', '/flags/')):
@@ -525,6 +566,7 @@ def check_multiple_workers(archive, browser):
 
     def socket(ws):
         url = urlsplit(ws.url)
+        sockets[(url.hostname, url.query)] = ws
         ws.on_message(lambda message: subscriptions.update({(url.hostname, url.query): message}))
 
     page.route('**/*', serve)
@@ -533,12 +575,23 @@ def check_multiple_workers(archive, browser):
     expect(page.locator('#cards article')).to_have_count(4)
     choose = page.get_by_role('link', name='Second Worker')
     expect(choose).to_have_attribute('href', '#/server/probe-1?apiIndex=1')
-    expect(page.locator('.total strong')).to_have_text('4')
+    expect(page.locator('.total strong')).to_have_text('6')
+    expect(page.locator('html')).to_have_attribute('lang', 'en')
+    expect(page.locator('body')).to_have_class(re.compile(r'\bnight\b'))
     page.wait_for_timeout(120)
     for host in monitors:
         message = subscriptions[(host, 'subscribe=all')]
         assert 'only-' + host in message, subscriptions
         assert all('only-' + other not in message for other in monitors if host != other), subscriptions
+    page.evaluate('() => { window.notifications = 0; window.cfsmAdapter.subscribe(() => window.notifications++); }')
+    for host in monitors:
+        sockets[(host, 'subscribe=all')].send(json.dumps({'type':'batchUpdate', 'updates': [
+            {'serverId':NODE['id'], 'samples': [{'data': {'cpu': 31}}]}]}))
+        page.wait_for_timeout(250)
+    page.wait_for_timeout(950)
+    assert page.evaluate('window.notifications') == 1, page.evaluate('window.notifications')
+    expect(page.locator('.total strong')).to_have_text('6')
+    expect(page.locator('.offline strong')).to_have_text('2')
     choose.click()
     expect(page.locator('.terminal-title')).to_have_text('Second Worker')
     expect(page.locator('.history-note')).to_be_visible()
@@ -553,6 +606,22 @@ def check_multiple_workers(archive, browser):
     page.close()
 
 
+def check_startup_error(archive, browser):
+    page = browser.new_page()
+
+    def serve(route):
+        path = urlsplit(route.request.url).path.lstrip('/') or 'index.html'
+        if path.endswith('.js') or path not in archive.namelist():
+            return route.fulfill(status=404)
+        return route.fulfill(body=archive.read(path), content_type=mimetypes.guess_type(path)[0])
+
+    page.route('**/*', serve)
+    page.goto(SITE)
+    expect(page.get_by_role('alert')).to_contain_text('主题暂时无法加载')
+    expect(page.get_by_role('alert')).to_be_visible()
+    page.close()
+
+
 if __name__ == '__main__':
     with ZipFile(ROOT / 'release/stardew-monitor.zip') as archive, sync_playwright() as driver:
         assert archive.testzip() is None
@@ -560,5 +629,6 @@ if __name__ == '__main__':
         browser = driver.chromium.launch(channel=channel)
         check(archive, browser)
         check_multiple_workers(archive, browser)
+        check_startup_error(archive, browser)
         browser.close()
     print('PASS: packaged assets, four seasons, day/night, music, weather credit, live and failed API, detail routes.')

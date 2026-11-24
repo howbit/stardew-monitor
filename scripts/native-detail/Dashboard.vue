@@ -11,7 +11,12 @@ const poster = window.estatePoster
 const adminHref = (apiBases[0] === location.origin ? '' : apiBases[0]) + '/admin#/admin'
 let setVisible
 
-onMounted(() => {
+async function activate() {
+  const config = await configFor(apiBases[0]).catch(() => null)
+  if (!props.active) return
+  window.applyFarmSiteConfig(config)
+  document.title = config?.site_title || title
+  if (setVisible) return setVisible(true)
   document.body.dataset.farmView = 'home'
   document.body.dataset.season = season
   document.body.classList.toggle('night', night)
@@ -35,16 +40,11 @@ onMounted(() => {
       const unsubscribe = window.cfsmAdapter.subscribe(() => { unsubscribe(); apply() })
     } else apply()
   }
-  configFor(apiBases[0]).then(config => {
-    if (props.active && config?.site_title) document.title = config.site_title
-  })
-})
-watch(() => props.active, async active => {
-  if (active) {
-    setVisible?.(true)
-    const config = await configFor(apiBases[0])
-    if (props.active) document.title = config?.site_title || title
-  } else setVisible?.(false)
+}
+onMounted(activate)
+watch(() => props.active, active => {
+  if (active) activate()
+  else setVisible?.(false)
 }, {flush: 'post'})
 </script>
 

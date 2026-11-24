@@ -363,8 +363,14 @@
         delete this.buildingOverrides[found.id];
       } else this.buildingOverrides[key] = building;
       saveBuildingOverrides(this.buildingOverrides);
-      found.building = building || (found.demo ? DEFAULT_NODES.find(n => n.id === key)?.building : null) || getStableBuildingForNode(key);
+      found.building = building || this.siteConfig?.theme_options?.stardew_buildings?.[found.serverId] ||
+        (found.demo ? DEFAULT_NODES.find(n => n.id === key)?.building : null) || getStableBuildingForNode(key);
       this.notify();
+    }
+
+    async saveSiteBuilding(node, building) {
+      this.siteConfig.theme_options = await global.farmWorkers.saveWorkerBuilding(node.apiBase, node.serverId, building);
+      this.setBuildingOverride(node.rawId, null);
     }
 
     subscribe(fn) {
@@ -410,8 +416,9 @@
       const serverId = String(server.id || '');
       const rawId = this.apiIndex ? this.apiBase + '::' + serverId : serverId;
       const displayId = String(server.name || server.id || 'Node');
-      const building = this.buildingOverrides[rawId] ||
-        this.buildingOverrides[displayId] ||
+      const siteBuilding = config.theme_options?.stardew_buildings?.[serverId];
+      const building = this.buildingOverrides[rawId] || this.buildingOverrides[displayId] ||
+        (BUILDINGS.includes(siteBuilding) ? siteBuilding : null) ||
         getStableBuildingForNode(rawId || displayId, this.buildingOverrides);
 
       const cpu = metric(server.cpu);
@@ -496,7 +503,8 @@
         const values = online.map(s => metric(s[key]));
         return values.includes(null) ? null : values.reduce((sum, value) => sum + value, 0);
       };
-      this.updateStatsFromPayload({globalSpeedIn:combined('net_in_speed'), globalSpeedOut:combined('net_out_speed')});
+      this.updateStatsFromPayload({ ...this.inventoryCounts,
+        globalSpeedIn:combined('net_in_speed'), globalSpeedOut:combined('net_out_speed') });
     }
 
     updateStatsFromPayload(statsPayload) {
@@ -800,14 +808,12 @@
       try {
         if (!this.apiBase) throw new Error('请通过 CF-Server-Monitor 站点打开主题。');
         const options = {headers:this.requestHeaders(), cache:'no-store', credentials:'include', signal:AbortSignal.timeout(15000)};
-        const [config, response] = await Promise.all([
-          this.siteConfig || global.farmWorkers?.configFor(this.apiBase) || fetch(this.apiBase + '/api/config', options).then(async res => {
-            if (res.status === 403 && options.headers['X-Turnstile-Verified'])
-              res = await fetch(this.apiBase + '/api/config', {cache:'no-store', signal:options.signal});
-            return res.ok ? res.json() : null;
-          }).catch(() => null),
-          fetch(this.apiBase + '/api/servers', options)
-        ]);
+        const runtime = global.farmWorkers;
+        const config = runtime ? await runtime.configFor(this.apiBase) : this.siteConfig ||
+          await fetch(this.apiBase + '/api/config', options).then(res => res.ok ? res.json() : null).catch(() => null);
+        if (!this.active || document.hidden) return;
+        const response = runtime ? await runtime.requestWorker(this.apiBase, '/api/servers') :
+          await fetch(this.apiBase + '/api/servers', options);
         if (config) {
           this.siteConfig = {...config};
           const sign = document.querySelector('.site-sign strong');
@@ -841,6 +847,8 @@
         if (!response.ok) throw new Error(global.farmText?.('节点接口返回 HTTP {code}。',{code:response.status}) || 'HTTP ' + response.status);
         const payload = await response.json();
         if (!Array.isArray(payload.servers)) throw new Error('节点接口返回了无法识别的数据。');
+        const { total, online, offline } = payload.stats || {};
+        this.inventoryCounts = { total, online, offline };
         const previous = new Map(this.rawServers.map(s => [s.id,s.rateSamples]));
         this.rawServers = payload.servers;
         this.siteConfig = {...this.siteConfig, ...payload.sysConfig};
@@ -897,6 +905,15 @@
       return {updated, unknown};
     }
 
+    publishLiveSnapshot() {
+      this.renderTimer = null;
+      if (!this.active || document.hidden || this.connection === 'auth') return;
+      this.currentNodes = this.rawServers.map(server => this.normalizeServer(server));
+      this.updateStatsFromNodes();
+      if (this.ws?.readyState === WebSocket.OPEN) this.connection = 'ready';
+      if (!this.grouped) this.notify();
+    }
+
     connectWebSocket() {
       const ids = this.rawServers.map(s => s.id);
       const subscription = JSON.stringify({type:'subscribe',scope:'all',ids});
@@ -937,14 +954,8 @@
         if (!this.applyUpdates(message.updates).updated) return;
         this.retryCount = 0;
         this.retryDelay = 2000;
-        if (this.renderTimer) return;
-        this.renderTimer = setTimeout(() => {
-          this.renderTimer = null;
-          this.currentNodes = this.rawServers.map(s => this.normalizeServer(s));
-          this.updateStatsFromNodes();
-          this.connection = 'ready';
-          this.notify();
-        }, 1000);
+        if (this.queueGroupRender) this.queueGroupRender(this);
+        else this.renderTimer ||= setTimeout(() => this.publishLiveSnapshot(), 1000);
       };
       ws.onclose = () => {
         if (ws !== this.ws) return;
@@ -961,11 +972,28 @@
     constructor(bases) {
       super(bases[0]);
       this.workers = bases.map((base, index) => new CFServerMonitorAdapter(base, index, true));
-      this.workers.forEach(worker => worker.subscribe(() => this.collect()));
+      this.dirtyWorkers = new Set();
+      this.workers.forEach(worker => {
+        worker.subscribe(() => this.collect());
+        worker.queueGroupRender = changed => {
+          this.dirtyWorkers.add(changed);
+          this.renderTimer ||= setTimeout(() => {
+            this.renderTimer = null;
+            this.dirtyWorkers.forEach(lane => lane.publishLiveSnapshot());
+            this.dirtyWorkers.clear();
+            if (!document.hidden) this.collect();
+          }, 1000);
+        };
+      });
     }
 
     activate() { return Promise.all(this.workers.map(worker => worker.activate())); }
-    deactivate() { this.workers.forEach(worker => worker.deactivate()); }
+    deactivate() {
+      clearTimeout(this.renderTimer);
+      this.renderTimer = null;
+      this.dirtyWorkers.clear();
+      this.workers.forEach(worker => worker.deactivate());
+    }
     init() { return Promise.all(this.workers.map(worker => worker.init())); }
 
     collect() {
@@ -995,6 +1023,10 @@
       const worker = this.workers[node.apiIndex];
       worker.buildingOverrides = loadBuildingOverrides();
       worker.setBuildingOverride(nodeId, building);
+    }
+
+    saveSiteBuilding(node, building) {
+      return this.workers[node.apiIndex].saveSiteBuilding(node, building);
     }
   }
 

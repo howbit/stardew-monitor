@@ -20,6 +20,7 @@
 
   window.showMonitorAccess = (panel, state, config, apiBase, retry) => {
     if (!panel) return;
+    panel.retryAccess = retry;
     const verify = state === 'auth' && [true, 'true', 1].includes(config?.turnstile_enabled)
       && config.turnstile_site_key && config.verified !== true;
     const key = [state, apiBase, verify && config.turnstile_site_key, window.farmLocale].join('|');
@@ -35,7 +36,7 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = t('重新连接');
-    button.onclick = retry;
+    button.onclick = () => panel.retryAccess();
     panel.append(message, button);
     if (state !== 'auth') {
       message.textContent = t(({stale:'连接中断，显示上次同步的数据。', paused:'实时连接已按站点设置暂停。', retry:'暂时无法连接监控站点。'})[state]);
@@ -70,17 +71,17 @@
           sitekey:config.turnstile_site_key, size:'flexible',
           callback:async token => {
             try {
-              const headers = {...window.farmWorkers?.workerHeaders(apiBase), 'X-Turnstile-Token':token};
-              delete headers['X-Turnstile-Verified'];
-              const res = await fetch(apiBase + '/api/config', {headers, credentials:'include', cache:'no-store', signal:AbortSignal.timeout(15000)});
-              const result = res.ok && await res.json();
+              if (window.farmWorkers) await window.farmWorkers.verifyWorker(apiBase, token);
+              else {
+                const res = await fetch(apiBase + '/api/config', {headers:{'X-Turnstile-Token':token}, credentials:'include', cache:'no-store', signal:AbortSignal.timeout(15000)});
+                const result = res.ok && await res.json();
+                if (result?.verified !== true) return failed();
+                if (result.turnstile_verified && new URL(apiBase).origin === location.origin)
+                  localStorage.setItem('turnstile_verified', result.turnstile_verified);
+              }
               if (!host.isConnected) return;
-              if (result.verified !== true) return failed();
-              if (window.farmWorkers) window.farmWorkers.rememberWorkerProof(apiBase, result.turnstile_verified);
-              else if (result.turnstile_verified && new URL(apiBase).origin === location.origin)
-                localStorage.setItem('turnstile_verified', result.turnstile_verified);
               button.disabled = false;
-              await retry();
+              await panel.retryAccess();
             } catch { failed(); }
           },
           'error-callback':failed, 'expired-callback':failed, 'timeout-callback':failed

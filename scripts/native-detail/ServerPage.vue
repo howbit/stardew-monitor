@@ -1,9 +1,9 @@
 <script setup>
-import { defineComponent, h, nextTick, onMounted, onUnmounted, provide, ref } from 'vue'
+import { defineComponent, h, onMounted, onUnmounted, provide, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import ServerDetail from './ServerDetail.vue'
 import { initFarmTheme } from './detail-theme.js'
-import { apiBases, clearWorkerProof, configFor, requestWorker } from './monitor-runtime.js'
+import { apiBases, clearWorkerProof, configFor, requestWorker, turnstileEnabled } from './monitor-runtime.js'
 import { initConfig } from '@cfsm/utils/config'
 import { setLanguage } from '@cfsm/utils/i18n'
 import { VERSION, LAST_WORKERS_VERSION } from '@cfsm/utils/api'
@@ -25,7 +25,7 @@ const Content = defineComponent({
   setup() {
     provide('initialServer', server.value)
     provide('appConfig', config || {})
-    return () => h(ServerDetail, {onReauth: () => { server.value = null; retry() }})
+    return () => h(ServerDetail, {onReauth: reauth})
   }
 })
 
@@ -34,25 +34,35 @@ css.textContent = mainCss + '\n' + lightCss + '\n' + layoutCss
 document.head.append(css)
 document.body.classList.add('farm-detail')
 document.body.dataset.farmView = 'detail'
-const stopTheme = initFarmTheme()
+let stopTheme = () => {}
+
+function reauth(resume) {
+  clearWorkerProof(base)
+  const accessConfig = {...config, verified: false}
+  window.showMonitorAccess(panel.value, turnstileEnabled(config) ? 'auth' : 'retry', accessConfig, base, async () => {
+    window.showMonitorAccess(panel.value, 'ready', config, base, null)
+    await resume()
+  })
+}
 
 async function retry() {
   if (pending || !alive) return
   pending = true
   try {
-    const [response, settings] = await Promise.all([
-      requestWorker(base, '/api/server?id=' + encodeURIComponent(id)), configFor(base),
-      initConfig(), setLanguage(window.farmLocale === 'zh-CN' ? 'zh' : window.farmLocale)
+    config ||= await configFor(base)
+    if (!alive) return
+    window.applyFarmSiteConfig(config)
+    stopTheme()
+    stopTheme = initFarmTheme()
+    const [response] = await Promise.all([
+      requestWorker(base, '/api/server?id=' + encodeURIComponent(id)), initConfig(),
+      setLanguage(window.farmLocale === 'zh-CN' ? 'zh' : window.farmLocale)
     ])
     if (!alive) return
-    config = settings
     if (response.status === 401) return window.openMonitorLogin(base)
     if (response.status === 403) {
-      clearWorkerProof(base)
       status.value = '节点详情需要登录或访问验证'
-      await nextTick()
-      if (alive) window.showMonitorAccess(panel.value, 'auth', {...config, verified: false}, base, retry)
-      return
+      return reauth(retry)
     }
     const data = response.ok ? await response.json() : null
     if (!alive) return
@@ -70,6 +80,7 @@ async function retry() {
 onMounted(retry)
 onUnmounted(() => {
   alive = false
+  window.showMonitorAccess(panel.value, 'ready', config, base, null)
   stopTheme()
   css.remove()
   document.body.classList.remove('farm-detail', 'light')
@@ -77,10 +88,10 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <div ref="panel" class="container monitor-access detail-access" hidden></div>
   <Content v-if="server" />
   <main v-else class="container detail-message">
     <RouterLink to="/" class="back-btn">{{ messages('返回') }}</RouterLink>
     <p role="status">{{ messages(status) }}</p>
-    <div ref="panel" class="monitor-access" hidden></div>
   </main>
 </template>

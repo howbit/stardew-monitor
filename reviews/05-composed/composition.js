@@ -107,7 +107,7 @@ function syncSceneCopy() {
   currentTime = Core.resolveScene(place);
   const manual = seasonSelect.value !== 'auto';
   const season = manual ? seasonSelect.value : (currentTime.season === 'autumn' ? 'fall' : currentTime.season);
-  const isNight = phaseOverride ?? (currentTime.phase === 'night');
+  const isNight = phaseOverride ?? window.farmPreferredNight ?? (currentTime.phase === 'night');
   if (document.body.dataset.season !== season || document.querySelector('#seasonal-footer').dataset.season !== season) {
     window.applySeason(season, {persist:false});
   }
@@ -158,7 +158,7 @@ seasonSelect.addEventListener('change', () => {
 });
 modeButton.addEventListener('click', () => {
   const nextNight = !document.body.classList.contains('night');
-  phaseOverride = nextNight === (currentTime.phase === 'night') ? null : nextNight;
+  phaseOverride = nextNight === (window.farmPreferredNight ?? (currentTime.phase === 'night')) ? null : nextNight;
   syncSceneCopy();
 });
 window.selectServerScene = function(serverId) {

@@ -4,7 +4,7 @@ const listeners = new Set()
 let place, override
 
 function refresh() {
-  const night = override ?? (window.StardewScene.resolveScene(place).phase === 'night')
+  const night = override ?? window.farmPreferredNight ?? (window.StardewScene.resolveScene(place).phase === 'night')
   if (document.body.classList.contains(night ? 'night' : 'light')) return
   document.body.classList.toggle('light', !night)
   document.body.classList.toggle('night', night)

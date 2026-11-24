@@ -68,7 +68,7 @@ def build():
   <script type="module" src="@THEME@/app/{main}"></script>
 </head>
 <body class="landscape-preview" data-farm-art="native">
-  <div id="app"></div>
+  <div id="app"><p class="theme-startup-message" role="alert">主题暂时无法加载，请刷新页面重试。 / The theme could not load. Refresh to retry.</p></div>
 </body>
 </html>""")
     files['app/LICENSES.txt'] = built / 'LICENSES.txt'
@@ -101,6 +101,12 @@ def build():
             content[name.removesuffix('.png') + '.webp'] = converted.getvalue()
         else:
             content[name] = path.read_bytes()
+    styles.append('''
+.theme-startup-message{margin:2rem auto;padding:1rem;max-width:42rem;color:#2d241b;background:#fff7e7;
+animation:show-theme-startup .01s 2s both}
+@keyframes show-theme-startup{from{visibility:hidden}to{visibility:visible}}
+.detail-access:not([hidden]){display:flex;margin:1rem auto;position:relative;z-index:1}
+''')
     content['app/home.css'] = '\n'.join(styles).encode('utf8')
     # Pinned commits have immutable assets. Change their browser URLs without changing the repository paths.
     digest = hashlib.sha256(entry.encode('utf8'))

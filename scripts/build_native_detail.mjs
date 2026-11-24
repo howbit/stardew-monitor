@@ -66,7 +66,9 @@ await build({
     },
     async transform(source, rawId) {
       const id = rawId.split('?')[0].replaceAll('\\', '/')
-      if (id.endsWith('/styles/main.css')) return source.replace(/^@import url\('https:\/\/fonts\.googleapis\.com[^\n]+/m, '')
+      if (id.endsWith('/styles/main.css')) return source
+        .replace(/^@import url\('https:\/\/fonts\.googleapis\.com[^\n]+/m, '')
+        .replace(/^\s*background: url\('\/mikus\/sakura\.png'\)[^\n]+/m, '')
       if (id.endsWith('/src/frontend/utils/api.js')) {
         return source.replace('const token = getJwtToken()', 'const token = handlers.authToken ? handlers.authToken() : getJwtToken()')
       }

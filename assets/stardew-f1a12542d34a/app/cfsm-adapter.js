@@ -22,12 +22,12 @@
   ];
 
   const DEFAULT_LOCATIONS = {
-    'HK-1': { city: '香港', timeZone: 'Asia/Hong_Kong', latitude: 22.3193, longitude: 114.1694 },
-    'HK-2': { city: '香港', timeZone: 'Asia/Hong_Kong', latitude: 22.3193, longitude: 114.1694 },
-    'RN-1': { city: '洛杉矶', timeZone: 'America/Los_Angeles', latitude: 34.0522, longitude: -118.2437 },
-    'RN-2': { city: '圣何塞', timeZone: 'America/Los_Angeles', latitude: 37.3382, longitude: -121.8863 },
-    'C-1':  { city: '法兰克福', timeZone: 'Europe/Berlin', latitude: 50.1109, longitude: 8.6821 },
-    'H4':   { city: '特罗姆瑟', timeZone: 'Europe/Oslo', latitude: 69.6492, longitude: 18.9553 }
+    'HK-1': { city: '香港', regionCode:'HK', timeZone: 'Asia/Hong_Kong', latitude: 22.3193, longitude: 114.1694 },
+    'HK-2': { city: '香港', regionCode:'HK', timeZone: 'Asia/Hong_Kong', latitude: 22.3193, longitude: 114.1694 },
+    'RN-1': { city: '洛杉矶', regionCode:'US', timeZone: 'America/Los_Angeles', latitude: 34.0522, longitude: -118.2437 },
+    'RN-2': { city: '圣何塞', regionCode:'US', timeZone: 'America/Los_Angeles', latitude: 37.3382, longitude: -121.8863 },
+    'C-1':  { city: '法兰克福', regionCode:'DE', timeZone: 'Europe/Berlin', latitude: 50.1109, longitude: 8.6821 },
+    'H4':   { city: '特罗姆瑟', regionCode:'NO', timeZone: 'Europe/Oslo', latitude: 69.6492, longitude: 18.9553 }
   };
 
   const KNOWN_REGION_LOCATIONS = [
@@ -67,7 +67,7 @@
     const point = core.coordinates(configured) || core.coordinates(raw) || core.coordinates(hint || {});
     const zone = [configured.timeZone, raw.time_zone, raw.timeZone, hint?.timeZone].find(value => core.canonicalZone(value));
     return {...configured, latitude:point?.latitude, longitude:point?.longitude,
-      city:city || hint?.city || regionLabel, timeZone:zone, regionCode:code};
+      city:city || hint?.city || regionLabel, timeZone:zone, regionCode:code || cityRegions[hint?.city] || ''};
   }
 
   // 基准已确认的 6 个样例节点（离线/预览保证与原先视觉 100% 逐字逐像素一致）
@@ -562,12 +562,15 @@
               node.city = location.city || '地区未配置';
             }
             return {
+              ...node,
               id: node?.id || detail.name || detail.id,
               rawId: detail.id,
               city: location.city || '地区未配置',
               location,
               online: node.online, building:node.building,
               cpuModel:detail.cpu_info, cores:metric(detail.cpu_cores), arch:detail.arch, os:detail.os, kernel:detail.kernel_version,
+              virtualization:detail.virtualization || detail.virt_type,
+              totalRx:formatBytes(metric(detail.net_rx)), totalTx:formatBytes(metric(detail.net_tx)),
               bootTime:node.bootTime, days:node.days, lastUpdated:node.lastUpdated, ip:node.ip,
               ramTotalMB:metric(detail.ram_total), ramUsedMB:metric(detail.ram_used), diskTotalMB:metric(detail.disk_total),
               diskUsedMB:metric(detail.disk_used), swapTotalMB:metric(detail.swap_total), swapUsedMB:metric(detail.swap_used),
@@ -733,6 +736,7 @@
       };
 
       return {
+        ...node,
         id: id,
         rawId: node?.rawId || id,
         city: node?.city || (DEFAULT_LOCATIONS[id] ? DEFAULT_LOCATIONS[id].city : id),

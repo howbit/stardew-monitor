@@ -50,9 +50,9 @@ function buildingMarkup(node){
     const base = `<img class="building-base" alt="" src="${window.nodeFarmSprite(node.building)}">`;
     return base + (node.online ? `<img class="window-light" alt="" src="${window.nodeFarmSprite(node.building,true)}">` : '');
   }
-  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-b636e8f0a5bd/buildings3/${node.building}.png">`;
-  const base = `<img class="building-base" alt="" src="/assets/stardew-b636e8f0a5bd/lights3/${node.building}-night.png">`;
-  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-b636e8f0a5bd/lights3/${node.building}-light.png">` : '';
+  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-f1a12542d34a/buildings3/${node.building}.png">`;
+  const base = `<img class="building-base" alt="" src="/assets/stardew-f1a12542d34a/lights3/${node.building}-night.png">`;
+  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-f1a12542d34a/lights3/${node.building}-light.png">` : '';
   return base + lights;
 }
 
@@ -155,13 +155,13 @@ function systemBadge(node, detailUrl) {
   const os = node.os?.trim();
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
-  const src = file ? '/os-icons/'+file : '/assets/stardew-b636e8f0a5bd/ui/lucide/hard-drive.svg';
+  const src = file ? '/os-icons/'+file : '/assets/stardew-f1a12542d34a/ui/lucide/hard-drive.svg';
   return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="'+nodeText('查看系统版本')+' '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
 
 function metricIcon(name) {
-  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-b636e8f0a5bd/ui/lucide/'+name+'.svg)"></i>';
+  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-f1a12542d34a/ui/lucide/'+name+'.svg)"></i>';
 }
 
 function percentTrack(used, label) {
@@ -271,14 +271,38 @@ function renderSegmentedMeter(label, percent, type, isOnline, capacity = '') {
 let currentRegion = 'all';
 let currentView = 'grid';
 try {
-  const savedV = localStorage.getItem('cfsm_stardew_view');
+  const requested = new URLSearchParams(location.search).get('view');
+  const savedV = ['grid','list'].includes(requested) ? requested : localStorage.getItem('cfsm_stardew_view');
   if (savedV === 'list') currentView = 'list';
 } catch {}
 
+function expiryInfo(date, today = new Date()) {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})(?:$|[T ])/.exec(date || '');
+  if (!parts) return null;
+  const [year, month, day] = parts.slice(1).map(Number);
+  const end = new Date(Date.UTC(year, month - 1, day));
+  if (end.getUTCFullYear() !== year || end.getUTCMonth() !== month - 1 || end.getUTCDate() !== day) return null;
+  const start = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const days = (end.getTime() - start) / 86400000;
+  const key = days > 0 ? '剩余 {n} 天' : days < 0 ? '已过期 {n} 天' : '今天到期';
+  return {days, text:nodeText(key,{n:Math.abs(days)})};
+}
+
 function billingMarkup(node) {
-  return [['计费',node.price],['到期',node.expireDate]]
-    .filter(([,value]) => value && value !== '—')
-    .map(([label,value]) => `<span>${nodeText(label)} <b>${escapeText(value)}</b></span>`).join('');
+  const expiry = expiryInfo(node.expireDate);
+  const price = node.price && node.price !== '—' ? `<span class="summary-price">${nodeText('计费')} <b>${escapeText(node.price)}</b></span>` : '';
+  const tone = expiry && (expiry.days < 0 ? 'expired' : expiry.days <= 7 ? 'soon' : '');
+  return price + (expiry ? `<span class="summary-expiry ${tone}"><b>${escapeText(expiry.text)}</b></span>` : '');
+}
+
+const flagNames = new Intl.DisplayNames([window.farmLocale || 'zh-CN'], {type:'region',fallback:'none'});
+function regionFlag(node) {
+  const code = node.location?.regionCode;
+  if (!/^[A-Z]{2}$/.test(code || '') || !flagNames.of(code)) return '';
+  const name = flagNames.of(code);
+  const title = [name, nodeText(node.city)].filter((value,index,all) => value && all.indexOf(value) === index).join(' · ');
+  const base = window.cfsmAdapter?.isLive || !node.demo ? '/flags/' : '/assets/stardew-f1a12542d34a/ui/demo-flags/';
+  return `<span class="region-flag summary-country" title="${escapeText(title)}"><img alt="${escapeText(name)}" src="${base}${code.toLowerCase()}.svg"></span>`;
 }
 
 function renderNodeSummary(node, detailUrl) {
@@ -291,16 +315,7 @@ function renderNodeSummary(node, detailUrl) {
   }).join('');
   const [down,up] = node.net || [];
   const speed = (label,rate) => `<div class="summary-metric"><dt>${nodeText(label)}</dt><dd>${escapeText(node.online ? rate : '—')}</dd></div>`;
-  const billingParts = [];
-  if (node.price && node.price !== '—') billingParts.push('<span class="summary-price">'+nodeText('计费')+' '+escapeText(node.price)+'</span>');
-  if (node.expireDate && node.expireDate !== '—') {
-    const end = Date.parse(node.expireDate);
-    const days = Math.ceil((end - Date.now())/86400000);
-    const expiry = Number.isFinite(days) ? (days < 0 ? nodeText('已到期') : days === 0 ? nodeText('今天到期') : nodeText('{n}天后到期',{n:days})) : node.expireDate;
-    const tone = days < 0 ? 'expired' : days <= 7 ? 'soon' : '';
-    billingParts.push('<span class="summary-expiry '+tone+'" title="'+escapeText(node.expireDate)+'">'+escapeText(expiry)+'</span>');
-  }
-  const billing = billingParts.join('');
+  const billing = billingMarkup(node);
   const tags = [];
   function tag(kind, value) {
     if (value && value !== '—') tags.push(`<span class="summary-tag ${kind}">${escapeText(value)}</span>`);
@@ -313,9 +328,7 @@ function renderNodeSummary(node, detailUrl) {
   }
   for (const label of node.tags || []) tag('custom',label);
   if (node.trafficMode && node.remaining && node.remaining !== '—') tag('remaining',nodeText('剩余')+' '+node.remaining);
-  const region = node.location?.regionCode || ({'香港':'HK','洛杉矶':'US','圣何塞':'US','法兰克福':'DE','特罗姆瑟':'NO'})[node.city] || '';
-  const flag = /^[A-Z]{2}$/.test(region) ? '<span class="summary-country" title="'+escapeText(node.city || region)+'">'+
-    (window.cfsmAdapter?.isLive ? '<img src="/flags/'+region.toLowerCase()+'.svg" alt="'+region+'">' : region)+'</span>' : '';
+  const flag = regionFlag(node);
   const os = getNodeOSInfo(node).name;
   return `<header class="summary-head"><h3><span class="summary-status" role="img" aria-label="${status}" title="${status}"></span>
     ${flag}<a class="name" href="${detailUrl}">${escapeText(node.id)}</a></h3>
@@ -325,8 +338,10 @@ function renderNodeSummary(node, detailUrl) {
     ${tags.length ? '<div class="summary-tags">'+tags.join('')+'</div>' : ''}`;
 }
 
-function bindNodeActions(card, node, warpHost) {
+function setNodeActions(card, node, warpHost) {
   card.dataset.id = node.id;
+  card.dataset.key = node.rawId ?? node.id;
+  card.setAttribute('aria-label',node.id);
   if (window.estateStart && warpHost) {
     const warp = document.createElement('button');
     warp.type = 'button';
@@ -336,31 +351,79 @@ function bindNodeActions(card, node, warpHost) {
     const selected = window.estateSelectedNode?.() === node.id;
     warp.setAttribute('aria-pressed', String(selected));
     card.classList.toggle('scene-active', selected);
-    warp.addEventListener('click', event => {
-      event.stopPropagation();
-      window.selectServerScene(node.id);
-      document.querySelector('.farm-hero').scrollIntoView({block:'start'});
-    });
     if (warpHost.classList.contains('node-status-badge')) warpHost.querySelector('span').after(warp);
     else warpHost.append(warp);
   }
-  card.setAttribute('title', nodeText('点击查看 {id} 详细运行规格与历史趋势',{id:node.id}));
-  card.addEventListener('click', event => {
-    if (event.target.closest('button,a')) return;
+}
+
+cards.addEventListener('click', event => {
+  const card = event.target.closest('article[data-key]');
+  if (!card) return;
+  const node = nodes.find(item => String(item.rawId ?? item.id) === card.dataset.key);
+  if (!node) return;
+  const button = event.target.closest('button');
+  if (button?.classList.contains('farm-warp')) {
+    window.selectServerScene(node.id);
+    document.querySelector('.farm-hero').scrollIntoView({block:'start'});
+  } else if (button?.classList.contains('building-picker')) {
+    if (menuCard && window.openHousePicker) return window.openHousePicker(node, choices, button);
+    node.building = choices[(choices.indexOf(node.building) + 1) % choices.length];
+    window.cfsmAdapter?.setBuildingOverride(node.rawId || node.id, node.building);
+    render();
+  } else if (button?.hasAttribute('data-route-index')) {
+    const label = node.ping[Number(button.dataset.routeIndex)]?.[0];
+    if (menuCard && chosenRoutes.get(node.id) === label) chosenRoutes.delete(node.id);
+    else chosenRoutes.set(node.id, label);
+    render();
+  } else if (!event.target.closest('button,a')) {
     location.hash = '#/server/' + encodeURIComponent(node.rawId ?? node.id);
+  }
+});
+
+// Keep the hovered article, focused controls and unchanged sprites in place on each report.
+function syncCardElement(current, next) {
+  if (current.isEqualNode(next)) return;
+  if (current.nodeName !== next.nodeName || current.namespaceURI !== next.namespaceURI) {
+    current.replaceWith(next);
+    return;
+  }
+  if (current.nodeType !== 1) {
+    current.nodeValue = next.nodeValue;
+    return;
+  }
+  for (const name of current.getAttributeNames()) {
+    if (!next.hasAttribute(name)) current.removeAttribute(name);
+  }
+  for (const name of next.getAttributeNames()) {
+    const value = next.getAttribute(name);
+    if (current.getAttribute(name) !== value) current.setAttribute(name,value);
+  }
+  const children = Array.from(next.childNodes);
+  children.forEach((child,index) => {
+    if (current.childNodes[index]) syncCardElement(current.childNodes[index],child);
+    else current.append(child);
   });
+  while (current.childNodes.length > children.length) current.lastChild.remove();
 }
 
 function render(){
   const search = document.querySelector('#search');
   const q = search ? search.value.trim().toLowerCase() : '';
-  cards.replaceChildren();
+  const previous = new Map(Array.from(cards.children, el => [el.dataset.key, el]));
+  function place(card, index) {
+    const key = card.dataset.key;
+    const existing = previous.get(key);
+    previous.delete(key);
+    if (existing) syncCardElement(existing,card);
+    const item = existing || card;
+    if (cards.children[index] !== item) cards.insertBefore(item,cards.children[index] || null);
+  }
   const demoOverview = Boolean(demoNote && nodes?.length && nodes.every(node => node.demo));
   if (demoNote) demoNote.hidden = !demoOverview;
 
   if (cards) {
-    cards.classList.remove('grid-view', 'list-view');
-    cards.classList.add(`${currentView}-view`);
+    cards.classList.toggle('grid-view',currentView === 'grid');
+    cards.classList.toggle('list-view',currentView === 'list');
   }
 
   if(!nodes || nodes.length === 0){
@@ -374,7 +437,7 @@ function render(){
         ? nodeText('暂时无法读取节点。') + nodeText(adapter.lastError.message)
         : nodeText('正在连接监控站点…');
     }
-    cards.append(empty);
+    cards.replaceChildren(empty);
     return;
   }
 
@@ -391,8 +454,8 @@ function render(){
     if (menuCard && currentView === 'list') {
       card.className = 'server-summary '+(node.online ? 'online' : 'offline');
       card.innerHTML = renderNodeSummary(node, detailUrl);
-      bindNodeActions(card, node, card.querySelector('.summary-head'));
-      cards.append(card);
+      setNodeActions(card, node, card.querySelector('.summary-head'));
+      place(card, shown - 1);
       continue;
     }
     card.className = `card monitor-card ${node.online ? 'online' : 'offline'} view-${currentView}`;
@@ -400,7 +463,7 @@ function render(){
     card.classList.toggle('menu-card', menuCard);
     const subtitleParts = getNodeSubtitleParts(node);
     const subtitle = menuCard
-      ? '<span>'+escapeText(subtitleParts[0])+'</span>'
+      ? regionFlag(node) || '<span>'+escapeText(nodeText(node.city || '地区未配置'))+'</span>'
       : escapeText(subtitleParts.join(' · '));
     const [down, up] = (node.net || []).map(v => escapeText(v));
     const upNet = isOnline && up ? up : '—', downNet = isOnline && down ? down : '—';
@@ -408,10 +471,8 @@ function render(){
     const quota = limit && limit !== '—'
       ? escapeText(node.periodUsed || '—') + ' / ' + escapeText(limit) + (Number.isFinite(node.use) ? ' · '+Math.round(node.use)+'%' : '')
       : '↓ '+escapeText(rx)+'　↑ '+escapeText(tx);
-    const expiry = Date.parse(node.expireDate);
-    const until = Math.ceil((expiry - Date.now())/86400000);
-    const expiryBadge = Number.isFinite(until) && until <= 7
-      ? '<span class="expiry-notice">'+ (until < 0 ? nodeText('已到期') : until ? nodeText('{n}天后到期',{n:until}) : nodeText('今天到期'))+'</span>' : '';
+    const expiry = expiryInfo(node.expireDate);
+    const expiryBadge = expiry ? '<span class="expiry-notice">'+escapeText(expiry.text)+'</span>' : '';
     const report = node.lastUpdated ? '<small class="report-age" data-report="'+Number(node.lastUpdated)+'">'+reportText(node.lastUpdated)+'</small>' : '';
     const status = '<div class="node-status-badge '+(isOnline ? 'online' : 'offline')+'"><span><i class="status-dot"></i> '+
       nodeText(isOnline ? '在线' : '离线')+'</span>'+(!menuCard && currentView === 'list' ? expiryBadge : '')+(menuCard ? '' : report)+'</div>';
@@ -464,45 +525,20 @@ function render(){
         buildingMarkup(node)+'</button>'+title+status+'</div>';
       card.innerHTML = menuCard ? header+'<div class="card-readings">'+gauges+renderTransfer(node,upNet,downNet)+
         '<div class="node-probes">'+routes+history+'</div></div>' : header+gauges+traffic+routes+footer;
-      for (const btn of card.querySelectorAll('[data-route-index]')) {
-        btn.addEventListener('click', event => {
-          event.stopPropagation();
-          const clicked = allRoutes[Number(btn.dataset.routeIndex)][0];
-          if (menuCard && chosenRoutes.get(node.id) === clicked) chosenRoutes.delete(node.id);
-          else chosenRoutes.set(node.id,clicked);
-          render();
-          cards.querySelectorAll('[data-route-index="'+btn.dataset.routeIndex+'"]').forEach(next => {
-            if (next.closest('.monitor-card')?.dataset.id === node.id) next.focus();
-          });
-        });
-      }
     }
     const warpHost = menuCard ? '.node-status-badge' : currentView === 'list' ? '.col-host' : '.card-footer-row';
-    bindNodeActions(card, node, card.querySelector(warpHost));
+    setNodeActions(card, node, card.querySelector(warpHost));
     const nameEl = card.querySelector('.name');
     if (nameEl) nameEl.textContent = node.id;
 
     const buildingBtn = card.querySelector('.building-picker');
     if (buildingBtn) {
       buildingBtn.dataset.nodeId = node.rawId || node.id;
-      buildingBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (menuCard && window.openHousePicker) {
-          window.openHousePicker(node, choices, buildingBtn);
-          return;
-        }
-        const at = choices.indexOf(node.building);
-        const nextBuilding = choices[(at + 1) % choices.length];
-        node.building = nextBuilding;
-        if (window.cfsmAdapter && typeof window.cfsmAdapter.setBuildingOverride === 'function') {
-          window.cfsmAdapter.setBuildingOverride(node.id, nextBuilding);
-        }
-        render();
-      });
     }
 
-    cards.append(card);
+    place(card, shown - 1);
   }
+  for (const stale of previous.values()) stale.remove();
 
   if(!shown){
     const empty = document.createElement('p');
@@ -558,6 +594,13 @@ window.setNightMode = function(isNight) {
 window.renderNodes = render;
 window.setNodeView = function(view) {
   currentView = view === 'list' ? 'list' : 'grid';
+  if (typeof history !== 'undefined' && location.search) {
+    const url = new URL(location.href);
+    if (url.searchParams.has('view') && url.searchParams.get('view') !== currentView) {
+      url.searchParams.set('view',currentView);
+      history.replaceState(history.state,'',url);
+    }
+  }
   try { localStorage.setItem('cfsm_stardew_view', currentView); } catch {}
   for (const b of document.querySelectorAll('.view-opt')) {
     const isTarget = b.dataset.view === currentView;

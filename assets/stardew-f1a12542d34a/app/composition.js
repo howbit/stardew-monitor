@@ -40,10 +40,10 @@ const heroSources = heroArt ? {
   fall: { day: heroArt.dataset.fallDaySrc, night: heroArt.dataset.fallNightSrc },
   winter: { day: heroArt.dataset.winterDaySrc, night: heroArt.dataset.winterNightSrc }
 } : {
-  spring: { day: '/assets/stardew-b636e8f0a5bd/landscape/spring-layered-v6/hero-day.png', night: '/assets/stardew-b636e8f0a5bd/landscape/spring-layered-v6/hero-night.png' },
-  summer: { day: '/assets/stardew-b636e8f0a5bd/landscape/summer-matched-v1/hero-day.png', night: '/assets/stardew-b636e8f0a5bd/landscape/summer-matched-v1/hero-night.png' },
-  fall: { day: '/assets/stardew-b636e8f0a5bd/landscape/fall-matched-v1/hero-day.png', night: '/assets/stardew-b636e8f0a5bd/landscape/fall-matched-v1/hero-night.png' },
-  winter: { day: '/assets/stardew-b636e8f0a5bd/landscape/winter-matched-v1/hero-day.png', night: '/assets/stardew-b636e8f0a5bd/landscape/winter-matched-v1/hero-night.png' }
+  spring: { day: '/assets/stardew-f1a12542d34a/landscape/spring-layered-v6/hero-day.png', night: '/assets/stardew-f1a12542d34a/landscape/spring-layered-v6/hero-night.png' },
+  summer: { day: '/assets/stardew-f1a12542d34a/landscape/summer-matched-v1/hero-day.png', night: '/assets/stardew-f1a12542d34a/landscape/summer-matched-v1/hero-night.png' },
+  fall: { day: '/assets/stardew-f1a12542d34a/landscape/fall-matched-v1/hero-day.png', night: '/assets/stardew-f1a12542d34a/landscape/fall-matched-v1/hero-night.png' },
+  winter: { day: '/assets/stardew-f1a12542d34a/landscape/winter-matched-v1/hero-day.png', night: '/assets/stardew-f1a12542d34a/landscape/winter-matched-v1/hero-night.png' }
 };
 
 const Core = typeof window !== 'undefined' ? window.StardewScene : null;
@@ -53,7 +53,7 @@ window.estateSelectedNode = () => activeServerId;
 function paintLandscape(seasonKey, isNight) {
   const key = seasonKey + (isNight ? '-night' : '-day');
   const postcard = previewPostcards && postcardDescriptions[key];
-  const root = postcard ? '/assets/stardew-b636e8f0a5bd/landscape/postcards-v1/' + key : '';
+  const root = postcard ? '/assets/stardew-f1a12542d34a/landscape/postcards-v1/' + key : '';
   if (nativeFarm) document.body.dataset.farmArt = 'native';
   else delete document.body.dataset.farmArt;
   if (!nativeFarm && !postcard && seasonKey === 'spring') {
@@ -76,7 +76,7 @@ function resolveHeroSource(seasonKey, isNight) {
   if (nativeFarm) {
     const season = Object.hasOwn(farmCrops, seasonKey) ? seasonKey : 'spring';
     return {
-      src: `/assets/stardew-b636e8f0a5bd/landscape/native-spring-estate/${season}-${isNight ? 'night' : 'day'}.png`,
+      src: `/assets/stardew-f1a12542d34a/landscape/native-spring-estate/${season}-${isNight ? 'night' : 'day'}.png`,
       alt: nodeText('{scene}农场，主宅、水井和两片祝尼魔农田位于画面中央，{crops}', {scene:nodeText(seasonNames[season]+(isNight ? '夜' : '日')),crops:nodeText(farmCrops[season])})
     };
   }
@@ -125,7 +125,7 @@ function updateModularFooter(seasonKey, postcardRoot, isNight) {
   for (const [selector, side] of [['.flora-img', 'left'], ['.fence-img', 'right']]) {
     const img = document.querySelector(selector);
     if (img && nativeFarm) {
-      const src = `/assets/stardew-b636e8f0a5bd/landscape/native-spring-estate/footer/${validSeason}-${isNight ? 'night' : 'day'}-${side}.png`;
+      const src = `/assets/stardew-f1a12542d34a/landscape/native-spring-estate/footer/${validSeason}-${isNight ? 'night' : 'day'}-${side}.png`;
       if (img.getAttribute('src') !== src) img.src = src;
       continue;
     }
@@ -135,9 +135,9 @@ function updateModularFooter(seasonKey, postcardRoot, isNight) {
     }
     if (img) img.src = validSeason === 'spring'
       ? (side === 'right'
-        ? '/assets/stardew-b636e8f0a5bd/landscape/spring-unified-footer-v2/footer-right.png'
-        : '/assets/stardew-b636e8f0a5bd/landscape/spring-layered-v6/footer-left.png')
-      : `/assets/stardew-b636e8f0a5bd/landscape/${validSeason}-matched-v1/footer-${side}.png`;
+        ? '/assets/stardew-f1a12542d34a/landscape/spring-unified-footer-v2/footer-right.png'
+        : '/assets/stardew-f1a12542d34a/landscape/spring-layered-v6/footer-left.png')
+      : `/assets/stardew-f1a12542d34a/landscape/${validSeason}-matched-v1/footer-${side}.png`;
   }
 }
 
@@ -232,8 +232,11 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
   const bodyEl = backdrop.querySelector('.stardew-modal-body');
 
   let detailRequest = 0;
+  let stopReadings;
   function closeModal() {
     detailRequest++;
+    stopReadings?.();
+    stopReadings = null;
     backdrop.classList.remove('active');
     backdrop.setAttribute('aria-hidden', 'true');
     if (location.hash && location.hash.startsWith('#/server/')) {
@@ -271,6 +274,7 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
   async function openDetail(nodeId) {
     if (!window.cfsmAdapter) return;
     const request = ++detailRequest;
+    stopReadings?.();
     const detail = await window.cfsmAdapter.getServerDetail(nodeId);
     if (!detail || request !== detailRequest) return;
 
@@ -281,8 +285,7 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
       ${detail.ip ? `<span class="ip-tag">${escapeText(detail.ip)}</span>` : ''}
       <span>${nodeText('运行时长')} ${uptimeText(detail)}</span>
       ${detail.demo ? '<span>'+nodeText('示例数据')+'</span>' : '<span>'+reportText(detail.lastUpdated)+'</span>'}
-      ${detail.price && detail.price !== '—' ? '<span>'+nodeText('计费')+' '+escapeText(detail.price)+'</span>' : ''}
-      ${detail.expireDate && detail.expireDate !== '—' ? '<span>'+nodeText('到期')+' '+escapeText(detail.expireDate)+'</span>' : ''}
+      ${billingMarkup(detail)}
     `;
 
     const cap = (used,total) => used != null && total > 0 ? (used/1024).toFixed(1)+' / '+(total/1024).toFixed(1)+' GB' : '—';
@@ -291,11 +294,13 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
       ? nodeText('读')+' '+(io.read_bps/1048576).toFixed(1)+' MB/s · '+nodeText('写')+' '+(io.write_bps/1048576).toFixed(1)+' MB/s' : nodeText('未上报');
     const cpuPoints = (detail.history || []).map(h => h.cpu).filter(Number.isFinite);
     const ramPoints = (detail.history || []).map(h => h.ram).filter(Number.isFinite);
-    const pingPills = detail.ping.map(([label,val]) => {
-      const loss = detail.routeData?.[label]?.loss;
+    const pingPills = node => node.ping.map(([label,val]) => {
+      const data = node.routeData?.[label] || {};
+      const loss = data.loss;
       return '<div class="stardew-ping-pill"><small>'+escapeText(label)+'</small><strong>'+
-        (!detail.online ? '—' : val === null ? nodeText('超时') : escapeText(val)+' ms')+'</strong>'+
-        (Number.isFinite(loss) ? '<small>'+nodeText('丢包')+' '+loss+'%</small>' : '')+'</div>';
+        (!node.online ? '—' : val === null ? nodeText('超时') : escapeText(val)+' ms')+'</strong>'+
+        (node.online && Number.isFinite(loss) ? '<small>'+nodeText('丢包')+' '+loss+'%</small>' : '')+
+        trendChart(data.points || [],label+' '+nodeText('延迟趋势'))+'</div>';
     }).join('') || nodeText('线路未上报');
 
     let geoHtml = '';
@@ -320,11 +325,12 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
           <section class="stardew-box">
             <div class="stardew-box-title">${nodeText('机房天时与地理信息')}</div>
             <div class="stardew-grid-2">
-              <div class="stardew-prop-row"><span>${nodeText('所在地区')}</span><strong>${escapeText(nodeText(detail.city || '地区未配置'))}${sceneState.timeZoneFallback ? '' : ' ('+escapeText(sceneState.timeZone)+')'}</strong></div>
-              <div class="stardew-prop-row"><span>${nodeText('当地时间')}</span><strong>${sceneState.timeZoneFallback ? nodeText('时区未配置') : [localTimeStr, nodeText(seasonCn+'季'), sceneState.coordinates ? nodeText(phaseCn) : ''].filter(Boolean).join(' · ')}</strong></div>
-              <div class="stardew-prop-row"><span>${nodeText('地理坐标')}</span><strong>${coordsStr}</strong></div>
-              <div class="stardew-prop-row"><span>${nodeText('日出 / 日落')}</span><strong>${sceneState.timeZoneFallback ? '—' : sunStr}</strong></div>
+              <div class="stardew-prop-row"><span>${nodeText('所在地区')}</span><strong>${regionFlag(detail) || escapeText(nodeText(detail.city || '地区未配置'))}</strong></div>
+              ${sceneState.timeZoneFallback ? '' : `<div class="stardew-prop-row"><span>${nodeText('当地时间')}</span><strong>${localTimeStr} · ${escapeText(sceneState.timeZone)} · ${nodeText(seasonCn+'季')}${sceneState.coordinates ? ' · '+nodeText(phaseCn) : ''}</strong></div>`}
+              ${sceneState.coordinates ? `<div class="stardew-prop-row"><span>${nodeText('地理坐标')}</span><strong>${coordsStr}</strong></div>` : ''}
+              ${sceneState.coordinates && !sceneState.timeZoneFallback ? `<div class="stardew-prop-row"><span>${nodeText('日出 / 日落')}</span><strong>${sunStr}</strong></div>` : ''}
             </div>
+            ${sceneState.timeZoneFallback || !sceneState.coordinates ? '<p class="geo-note">'+nodeText(sceneState.timeZoneFallback && !sceneState.coordinates ? '机房时区和坐标尚未配置，暂时无法计算当地时间与日出日落。' : '尚缺机房时区或坐标，部分当地信息暂不可用。')+'</p>' : ''}
             <div style="margin-top:10px;text-align:right;">
               <button type="button" class="tool-button" id="teleport-scene-btn" style="cursor:pointer;">${nodeText('传送至节点农场')}</button>
             </div>
@@ -333,12 +339,22 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
     }
 
     bodyEl.innerHTML = `
-      ${geoHtml}
+      <div class="detail-switch" role="group" aria-label="${nodeText('查看节点详情')}">
+        <button type="button" aria-controls="detail-overview" aria-pressed="true">${nodeText('节点概览')}</button>
+        <button type="button" aria-controls="detail-probes" aria-pressed="false">${nodeText('线路延迟')}</button>
+      </div>
+      <div id="detail-overview" class="detail-panel">
+      <section class="stardew-box detail-summary">
+        <div class="stardew-box-title">${nodeText('节点概览')}</div>
+        <div class="detail-readings"></div>
+        ${detail.tags?.length ? '<div class="detail-tags">'+detail.tags.map(tag => '<span>'+escapeText(tag)+'</span>').join('')+'</div>' : ''}
+      </section>
       <section class="stardew-box">
         <div class="stardew-box-title">${nodeText('硬件配置与系统规格')}</div>
         <div class="stardew-grid-2">
           <div class="stardew-prop-row"><span>${nodeText('CPU 型号')}</span><strong title="${escapeText(detail.cpuModel)}">${escapeText(detail.cpuModel)}</strong></div>
           <div class="stardew-prop-row"><span>${nodeText('核心架构')}</span><strong>${escapeText(nodeText('{n} 核',{n:detail.cores}))} · ${escapeText(detail.arch)}</strong></div>
+          ${detail.virtualization ? `<div class="stardew-prop-row"><span>${nodeText('虚拟化')}</span><strong>${escapeText(detail.virtualization)}</strong></div>` : ''}
           <div class="stardew-prop-row"><span>${nodeText('操作系统')}</span><strong title="${escapeText(detail.os)}">${escapeText(detail.os)}</strong></div>
           <div class="stardew-prop-row"><span>${nodeText('内核版本')}</span><strong title="${escapeText(detail.kernel)}">${escapeText(detail.kernel)}</strong></div>
           <div class="stardew-prop-row"><span>${nodeText('连接统计')}</span><strong>TCP ${escapeText(detail.tcpConn)} · UDP ${escapeText(detail.udpConn)}</strong></div>
@@ -360,17 +376,14 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
       <section class="stardew-box">
         <div class="stardew-box-title">${nodeText('实时网络与月度流量')}</div>
         <div class="stardew-grid-2">
-          <div class="stardew-prop-row"><span>${nodeText('当前速率')}</span><strong>↓ ${escapeText(detail.netInSpeed)} · ↑ ${escapeText(detail.netOutSpeed)}</strong></div>
           <div class="stardew-prop-row"><span>${nodeText('月度累计')}</span><strong>${nodeText('下载')} ${escapeText(detail.netRxTotal)} · ${nodeText('上传')} ${escapeText(detail.netTxTotal)}</strong></div>
           <div class="stardew-prop-row"><span>${nodeText('月度配额')}</span><strong>${escapeText(detail.trafficLimit)}</strong></div>
+          ${[detail.totalTx,detail.totalRx].some(v => v && v !== '—') ? `<div class="stardew-prop-row"><span>${nodeText('探针累计收发')}</span><strong>↑ ${escapeText(detail.totalTx)} · ↓ ${escapeText(detail.totalRx)}</strong></div>` : ''}
           <div class="stardew-prop-row"><span>${nodeText('节点编号')}</span><strong>${escapeText(detail.rawId)}</strong></div>
         </div>
       </section>
 
-      <section class="stardew-box">
-        <div class="stardew-box-title">${nodeText('线路延迟与连通性')}</div>
-        <div class="stardew-ping-row">${pingPills}</div>
-      </section>
+      ${geoHtml}
 
       ${cpuPoints.length || ramPoints.length ? `
       <section class="stardew-box">
@@ -386,7 +399,43 @@ if (typeof clockTimer.unref === 'function') clockTimer.unref();
           </div>
         </div>
       </section>` : ''}
+      </div>
+      <section class="stardew-box detail-panel" id="detail-probes" hidden>
+        <div class="stardew-box-title">${nodeText('线路延迟与连通性')}</div>
+        <div class="stardew-ping-row"></div>
+      </section>
     `;
+
+    const updateReadings = node => {
+      const percent = n => Number.isFinite(n) ? Number(n.toFixed(1))+'%' : '—';
+      const swap = node.swapTotalMB > 0 && Number.isFinite(node.swapUsedMB) ? 100*node.swapUsedMB/node.swapTotalMB : null;
+      const gauges = [['CPU',node.cpu],['内存',node.ram],['磁盘',node.disk]];
+      if (swap !== null) gauges.push(['SWAP',swap]);
+      const values = gauges.map(([key,n]) => [key, node.online ? percent(n) : '—', node.online ? n : null]);
+      values.push(['负载',node.online ? node.load?.[0] : '—'],['上传',node.online ? node.net?.[1] : '—'],
+        ['下载',node.online ? node.net?.[0] : '—']);
+      if (node.remaining) values.push(['剩余流量',node.remaining]);
+      bodyEl.querySelector('.detail-readings').innerHTML = values.map(([key,value,amount]) =>
+        '<div><small>'+nodeText(key)+'</small><strong>'+escapeText(value)+'</strong>'+
+        (Number.isFinite(amount) ? '<i class="detail-meter"><i style="width:'+Math.min(100,Math.max(0,amount))+'%"></i></i>' : '')+'</div>').join('');
+      bodyEl.querySelector('.stardew-ping-row').innerHTML = pingPills(node);
+      const badge = subEl.querySelector('.status');
+      badge.classList.toggle('offline',!node.online);
+      badge.textContent = nodeText(node.online ? '在线' : '离线');
+    };
+    updateReadings(detail);
+    stopReadings = window.cfsmAdapter.subscribe(({nodes}) => {
+      const latest = nodes.find(node => (node.rawId || node.id) === detail.rawId);
+      if (latest) updateReadings({...detail,...latest});
+    });
+    const buttons = bodyEl.querySelectorAll('.detail-switch button');
+    for (const button of buttons) button.addEventListener('click', () => {
+      for (const option of buttons) {
+        option.setAttribute('aria-pressed',String(option === button));
+        bodyEl.querySelector('#'+option.getAttribute('aria-controls')).hidden = option !== button;
+      }
+    });
+    bodyEl.scrollTop = 0;
 
     const teleportBtn = bodyEl.querySelector('#teleport-scene-btn');
     if (teleportBtn) {

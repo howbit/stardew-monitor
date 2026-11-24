@@ -100,9 +100,8 @@
 .night .system-badge img {filter:brightness(1.2) drop-shadow(0 0 1px #b8d8ff88);}
 .landscape-preview .window-light {display:none;}
 .landscape-preview.night .window-light {display:block;pointer-events:none;}
-.night .menu-card.online .building-picker .building-base,.night .stardew-modal-portrait .building-base {filter:brightness(.70) saturate(.8);}
+.night .menu-card.online .building-picker .building-base {filter:brightness(.70) saturate(.8);}
 .night .menu-card .building-picker .window-light {filter:none;}
-.stardew-modal-portrait :is(.building-base,.window-light) {grid-area:1/1;}
 .menu-card .system-badge:focus-visible {outline:2px solid var(--action);}
 .menu-card .card-readings {
   --surface:#f8f5ee;--line:#ded9cc;--empty:#e8e4d9;--quiet:#6c6257;
@@ -268,12 +267,12 @@
   content:"";width:var(--glyph-size);height:var(--glyph-size);background:currentColor;
   mask:var(--tool-icon) center / var(--glyph-scale,100%) no-repeat;
 }
-.node-toolbar [data-view="grid"] {--tool-icon:url("/assets/stardew-f1a12542d34a/ui/tabler/layout-grid.svg");--glyph-scale:110%;}
-.node-toolbar [data-view="list"] {--tool-icon:url("/assets/stardew-f1a12542d34a/ui/tabler/table.svg");}
-.heading-right #view-mode {--tool-icon:url("/assets/stardew-f1a12542d34a/ui/tabler/moon.svg");}
-.night .heading-right #view-mode {--tool-icon:url("/assets/stardew-f1a12542d34a/ui/tabler/sun.svg");}
+.node-toolbar [data-view="grid"] {--tool-icon:url("/assets/stardew-0aa894668889/ui/tabler/layout-grid.svg");--glyph-scale:110%;}
+.node-toolbar [data-view="list"] {--tool-icon:url("/assets/stardew-0aa894668889/ui/tabler/table.svg");}
+.heading-right #view-mode {--tool-icon:url("/assets/stardew-0aa894668889/ui/tabler/moon.svg");}
+.night .heading-right #view-mode {--tool-icon:url("/assets/stardew-0aa894668889/ui/tabler/sun.svg");}
 .node-toolbar .node-search {
-  --tool-icon:url("/assets/stardew-f1a12542d34a/ui/tabler/search.svg");position:relative;display:flex;min-width:0;color:var(--icon);
+  --tool-icon:url("/assets/stardew-0aa894668889/ui/tabler/search.svg");position:relative;display:flex;min-width:0;color:var(--icon);
   margin-left:5px;
 }
 .node-toolbar .node-search::after {
@@ -337,27 +336,3 @@
 .night .house-dialog {background:#202d43;border-color:#5a7591;color:#f3f2e9;}
 .night .house-dialog button {border-color:#64768e;}
 .night .house-choices [aria-pressed="true"] {background:#2d504c;outline-color:#88caaa;}
-
-.detail-panel {display:grid;gap:12px;}
-.detail-panel[hidden] {display:none;}
-.detail-switch {display:flex;gap:5px;}
-.detail-switch button {
-  appearance:none;color:inherit;background:transparent;border:1px solid #ad9875;
-  border-radius:5px;padding:6px 13px;font:inherit;cursor:pointer;
-}
-.detail-switch [aria-pressed="true"] {background:#405e47;color:#fff;border-color:#405e47;}
-.night .detail-switch [aria-pressed="true"] {background:#b9dac9;color:#162d28;}
-.detail-readings {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
-.detail-readings > div {min-width:0;}
-.detail-readings small,.detail-readings strong {display:block;}
-.detail-readings small {opacity:.85;}
-.detail-readings strong {margin-top:3px;font-size:16px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
-.detail-meter,.detail-meter i {display:block;height:4px;border-radius:2px;}
-.detail-meter {margin-top:4px;background:#a8987b44;}
-.detail-meter i {background:#438461;}
-.night .detail-meter i {background:#8acead;}
-.detail-tags {display:flex;gap:5px;flex-wrap:wrap;margin-top:12px;}
-.detail-tags span {padding:2px 7px;border:1px solid #ad9875;border-radius:4px;overflow-wrap:anywhere;}
-.geo-note {margin:9px 0 0;font-size:12px;line-height:1.5;}
-.stardew-ping-pill .route-history {width:100%;max-width:130px;height:25px;margin-top:5px;}
-@media(max-width:540px) {.detail-readings {grid-template-columns:repeat(2,minmax(0,1fr));}}

@@ -917,6 +917,7 @@
   const adapter = new CFServerMonitorAdapter();
   global.CFSMAdapter = CFServerMonitorAdapter;
   global.cfsmAdapter = adapter;
+  if (location.hash.startsWith('#/server/')) return;
 
   // 延迟启动，避免阻塞页面核心骨架绘制
   if (document.readyState === 'loading') {

@@ -3,7 +3,7 @@
 
   const host = document.querySelector('.hero-scene');
   if (!host || !window.estateCamera || document.body.dataset.farmArt !== 'native') return;
-  const root = new URL('/assets/stardew-f1a12542d34a/landscape/native-spring-estate/', document.currentScript.src);
+  const root = new URL('/assets/stardew-0aa894668889/landscape/native-spring-estate/', document.currentScript.src);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const width = 1728, height = 464;
   const world = document.createElement('div');

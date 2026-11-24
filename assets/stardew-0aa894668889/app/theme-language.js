@@ -10,6 +10,11 @@
 
   // Keys are the original interface copy. Values inserted into a message are never translated.
   const messages = {
+    '返回':['Back','戻る'],
+    '正在读取节点数据':['Loading node data','ノード情報を読み込み中'],
+    '节点详情需要登录或访问验证':['Sign in or verify access to view this node','ノードの表示にはログインまたはアクセス認証が必要です'],
+    '节点不存在或暂时无法读取':['Node not found or temporarily unavailable','ノードが存在しないか、一時的に取得できません'],
+    '历史数据读取失败':['Could not load history','履歴を読み込めませんでした'],
     '剩余 {n} 天':['{n} days left','残り{n}日'], '已过期 {n} 天':['Expired {n} days ago','期限を{n}日超過'],
     '节点概览':['Overview','概要'], '线路延迟':['Latency','回線遅延'], '虚拟化':['Virtualization','仮想化'],
     '探针累计收发':['Probe traffic totals','プローブの累計通信量'],

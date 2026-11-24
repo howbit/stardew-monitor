@@ -3,13 +3,13 @@
 
   const host = document.querySelector('.hero-scene');
   if (!host || !window.estateCamera || document.body.dataset.farmArt !== 'native') return;
-  const root = new URL('/assets/stardew-8c7d3660ff88/landscape/native-spring-estate/', document.currentScript.src);
+  const root = new URL('/assets/stardew-b636e8f0a5bd/landscape/native-spring-estate/', document.currentScript.src);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const width = 1728, height = 464;
   const world = document.createElement('div');
   world.className = 'estate-world';
   world.setAttribute('role', 'group');
-  world.setAttribute('aria-label', '春日互动农场');
+  world.setAttribute('aria-label', nodeText('{scene}互动农场',{scene:nodeText('春日')}));
   world.hidden = true;
   const terrainCanvas = document.createElement('canvas');
   terrainCanvas.setAttribute('aria-hidden', 'true');
@@ -104,7 +104,7 @@
       else pondLine.moveTo(pond.x + x, pond.y + y);
     });
     pondLine.closePath();
-    const surface = pondButton = button('轻点池水，泛起涟漪', 'estate-pond');
+    const surface = pondButton = button(nodeText('轻点池水，泛起涟漪'), 'estate-pond');
     Object.assign(surface.style, {left: pond.x + 'px', top: pond.y + 'px',
       width: w + 'px', height: h + 'px',
       clipPath: 'polygon(' + outline.map(([x, y]) => x + 'px ' + y + 'px').join(',') + ')'});
@@ -114,7 +114,7 @@
       if (inWater(x, y)) {
         emit('wake', x, y, 38, 1.05, 0.8);
         emit('bubble', x, y - 2, 24, 0.75, 0.95);
-        status.textContent = '池水泛起一圈涟漪。';
+        status.textContent = nodeText('池水泛起一圈涟漪。');
         run();
       }
     });
@@ -122,7 +122,7 @@
 
   function makeAnimal([kind, name, speed, route], index) {
     const size = data.boxes[data.sheets[kind]][2] / (kind === 'horse' ? 7 : 4);
-    const hit = button('抚摸' + name, 'estate-animal');
+    const hit = button(nodeText('抚摸{animal}',{animal:nodeText(name)}), 'estate-animal');
     const [x, y] = route[0];
     const a = {kind, name, speed, route, size, hit, x, y, target: 1, heading: ['cat','dog','horse'].includes(kind) ? 1 : 0,
       wait: index === 10 ? 0.2 : (index % 4) * 0.27, walking: false, stride: index * 0.28,
@@ -134,7 +134,7 @@
       a.lovedAt = now;
       a.wait = 1.4;
       a.walking = false;
-      status.textContent = name + '感受到了你的抚摸。';
+      status.textContent = nodeText('{animal}感受到了你的抚摸。',{animal:nodeText(name)});
       run();
     }
     let hover;
@@ -337,7 +337,7 @@
         nextBubble = 0.9;
         if (data.pond) addPond();
         actors = data.animals.map(makeAnimal);
-        world.setAttribute('aria-label', dayNames[key] + '互动农场');
+        world.setAttribute('aria-label', nodeText('{scene}互动农场',{scene:nodeText(dayNames[key])}));
         world.hidden = false;
         fit();
       } catch (error) {

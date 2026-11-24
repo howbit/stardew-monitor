@@ -59,6 +59,12 @@
     '实时网络与月度流量':['Network and billing-cycle traffic','ネットワークと月間通信量'], '当前速率':['Current speed','現在の速度'], '月度累计':['Cycle usage','今期の使用量'], '月度配额':['Traffic limit','通信量上限'],
     '节点编号':['Node ID','ノード ID'], '线路延迟与连通性':['Latency and connectivity','遅延と接続状況'], '24 小时资源趋势波动':['Resource history · 24h','リソース履歴・24時間'],
     'CPU 占用率 (24h)':['CPU usage (24h)','CPU 使用率（24時間）'], '内存 占用率 (24h)':['Memory usage (24h)','メモリ使用率（24時間）'], '当前':['Current','現在'],
+    '星谷哨站监控面板':['Stardew monitor','スターデューモニター'], '星谷哨站完整页面预览':['Stardew monitor preview','スターデューモニターのプレビュー'],
+    '{scene}互动农场':['Interactive farm · {scene}','{scene}の牧場'], '{season}像素景观收尾':['{season} landscape','{season}の風景'],
+    '轻点池水，泛起涟漪':['Tap the pond to make ripples','池をタップして波紋を起こす'], '池水泛起一圈涟漪。':['Ripples spread across the pond.','池に波紋が広がりました。'],
+    '抚摸{animal}':['Pet the {animal}','{animal}をなでる'], '{animal}感受到了你的抚摸。':['You petted the {animal}.','{animal}をなでました。'],
+    '橘猫':['ginger cat','茶トラ猫'], '白牛':['white cow','白い牛'], '棕牛':['brown cow','茶色の牛'], '绵羊':['sheep','羊'], '小牛':['calf','子牛'],
+    '白鸡':['white chicken','白いニワトリ'], '褐鸡':['brown chicken','茶色のニワトリ'], '绿头鸭':['mallard','マガモ'], '农场犬':['farm dog','牧場の犬'], '栗色马':['chestnut horse','栗毛の馬'],
     '上下取大':['Higher direction','送受信の大きい方'], '速率趋势':['Speed history','速度の推移'], '延迟趋势':['Latency history','遅延の推移'], '丢包率趋势':['Loss history','損失率の推移'],
     '{scene}农场，主宅、水井和两片祝尼魔农田位于画面中央，{crops}':['{scene} farm with a farmhouse, a well and two Junimo fields growing {crops}.','{scene}の農場。中央に母屋と井戸、2つのジュニモ畑があり、{crops}が育っています。'],
     '草莓、花椰菜、防风草和土豆':['strawberries, cauliflower, parsnips and potatoes','イチゴ、カリフラワー、パースニップ、ジャガイモ'],
@@ -85,7 +91,7 @@
       if (url.href === location.href) location.reload(); else location.replace(url);
     });
     for (const el of document.querySelectorAll('.node-list-title h1,#node-demo-note,.region-tab,#season-preview option,#return-local')) el.textContent = t(el.textContent);
-    for (const el of document.querySelectorAll('.content-controls [aria-label],.content-controls [title],#search,.summary-strip,.scene-music')) {
+    for (const el of document.querySelectorAll('.content-controls [aria-label],.content-controls [title],#search,.summary-strip,.monitor-page,.scene-music')) {
       for (const attr of ['aria-label','title','placeholder']) {
         if (el.hasAttribute(attr)) el.setAttribute(attr,t(el.getAttribute(attr)));
       }

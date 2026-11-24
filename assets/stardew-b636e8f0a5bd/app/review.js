@@ -50,9 +50,9 @@ function buildingMarkup(node){
     const base = `<img class="building-base" alt="" src="${window.nodeFarmSprite(node.building)}">`;
     return base + (node.online ? `<img class="window-light" alt="" src="${window.nodeFarmSprite(node.building,true)}">` : '');
   }
-  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-8c7d3660ff88/buildings3/${node.building}.png">`;
-  const base = `<img class="building-base" alt="" src="/assets/stardew-8c7d3660ff88/lights3/${node.building}-night.png">`;
-  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-8c7d3660ff88/lights3/${node.building}-light.png">` : '';
+  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-b636e8f0a5bd/buildings3/${node.building}.png">`;
+  const base = `<img class="building-base" alt="" src="/assets/stardew-b636e8f0a5bd/lights3/${node.building}-night.png">`;
+  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-b636e8f0a5bd/lights3/${node.building}-light.png">` : '';
   return base + lights;
 }
 
@@ -155,13 +155,13 @@ function systemBadge(node, detailUrl) {
   const os = node.os?.trim();
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
-  const src = file ? '/os-icons/'+file : '/assets/stardew-8c7d3660ff88/ui/lucide/hard-drive.svg';
+  const src = file ? '/os-icons/'+file : '/assets/stardew-b636e8f0a5bd/ui/lucide/hard-drive.svg';
   return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="'+nodeText('查看系统版本')+' '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
 
 function metricIcon(name) {
-  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-8c7d3660ff88/ui/lucide/'+name+'.svg)"></i>';
+  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-b636e8f0a5bd/ui/lucide/'+name+'.svg)"></i>';
 }
 
 function percentTrack(used, label) {
@@ -524,7 +524,7 @@ function applySeason(season, { persist = true } = {}){
   const footer = document.querySelector('#seasonal-footer');
   if (footer) {
     footer.dataset.season = season;
-    footer.setAttribute('aria-label', `${next.label}像素景观收尾`);
+    footer.setAttribute('aria-label', nodeText('{season}像素景观收尾',{season:nodeText(next.label)}));
   }
   document.body.dataset.season = season;
   if (persist && window.cfsmAdapter && typeof window.cfsmAdapter.saveSeason === 'function') {

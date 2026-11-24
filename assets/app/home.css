@@ -129,7 +129,7 @@
 .monitor-card .ping-cell.critical strong{color:#c4382d}
 
 /* Separate game-sprite clusters: the centre intentionally stays empty. */
-.seasonal-footer{--season-atlas:url("../app/seasonal-atlas-spring.png?stardew_v=e9d312b369f7");position:relative;height:142px;margin:23px -18px -18px;overflow:hidden;border-top:1px solid rgba(139,92,49,.38);background:linear-gradient(180deg,rgba(255,250,231,.34),rgba(255,246,218,.95) 68%,#ead49f 69%,#d5bb79 100%);isolation:isolate}
+.seasonal-footer{--season-atlas:url("../app/seasonal-atlas-spring.png?stardew_v=f975f7544b03");position:relative;height:142px;margin:23px -18px -18px;overflow:hidden;border-top:1px solid rgba(139,92,49,.38);background:linear-gradient(180deg,rgba(255,250,231,.34),rgba(255,246,218,.95) 68%,#ead49f 69%,#d5bb79 100%);isolation:isolate}
 .seasonal-footer:after{content:"";position:absolute;left:39%;right:39%;bottom:0;height:18px;background:linear-gradient(180deg,transparent,rgba(236,211,157,.18));pointer-events:none}
 .season-cluster{position:absolute;bottom:0;width:36%;height:140px;pointer-events:none}
 .season-cluster-left{left:0}
@@ -212,7 +212,7 @@ body[data-season="winter"] .seasonal-footer{background:linear-gradient(180deg,rg
   border-top:2px solid #a97748;
   border-bottom:5px solid #8b6244;
   background-color:#fff2d2;
-  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=e9d312b369f7");
+  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=f975f7544b03");
   background-repeat:no-repeat;
   background-size:100% 400%;
   background-position:center top;
@@ -224,7 +224,7 @@ body[data-season="winter"] .seasonal-footer{background:linear-gradient(180deg,rg
 .seasonal-footer .season-cluster{display:none}
 body[data-season] .seasonal-footer{
   background-color:#fff2d2;
-  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=e9d312b369f7");
+  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=f975f7544b03");
   background-repeat:no-repeat;
   background-size:100% 400%;
 }
@@ -779,14 +779,14 @@ body[data-art-scheme="1"] .hero-grass-fringe{
   left:0;
   right:0;
   height:8px;
-  background-image:url("../app/hero-grass-fringe.svg?stardew_v=e9d312b369f7");
+  background-image:url("../app/hero-grass-fringe.svg?stardew_v=f975f7544b03");
   background-repeat:repeat-x;
   background-size:32px 8px;
   image-rendering:pixelated;
   z-index:4;
 }
 body.night[data-art-scheme="1"] .hero-grass-fringe{
-  background-image:url("../app/hero-grass-fringe-night.svg?stardew_v=e9d312b369f7");
+  background-image:url("../app/hero-grass-fringe-night.svg?stardew_v=f975f7544b03");
 }
 
 /* 完美解决“下面为什么会这样”：按参考图比例收紧的舒展拥抱底栏 */
@@ -799,7 +799,7 @@ body[data-art-scheme="1"] .seasonal-footer{
   min-height:120px;
   max-height:120px;
   background-color:#fff2d2 !important;
-  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=e9d312b369f7") !important;
+  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=f975f7544b03") !important;
   background-repeat:no-repeat !important;
   background-size:100% 400% !important;
   border-top:1.5px solid #dfc79e !important;
@@ -816,7 +816,7 @@ body[data-art-scheme="1"][data-season="winter"] .seasonal-footer{background-posi
 
 body.night[data-art-scheme="1"] .seasonal-footer{
   background-color:#0d1a29 !important;
-  background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=e9d312b369f7") !important;
+  background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=f975f7544b03") !important;
   border-top-color:#1c3349 !important;
   border-bottom-color:#0a1219 !important;
 }
@@ -1646,7 +1646,7 @@ body.night[data-season="winter"]{--night-paper:#0a1725}
 .night .content-heading h1{color:#fff3da}
 .night .content-panel .demo-note{color:#9fb4d0}
 .night .review-caption{color:#9fb4d0}
-body.night[data-season] .monitor-page .seasonal-footer{background-color:var(--night-paper);background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=e9d312b369f7");filter:none}
+body.night[data-season] .monitor-page .seasonal-footer{background-color:var(--night-paper);background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=f975f7544b03");filter:none}
 body.night .monitor-page .seasonal-footer:before{
   display:block !important;
   background:linear-gradient(180deg,var(--night-paper) 0%,rgba(11,25,40,0) 100%);
@@ -1667,7 +1667,7 @@ body.night .monitor-page .seasonal-footer:before{
   box-sizing:border-box;
   border-style:solid;
   border-width:8px;
-  border-image-source:url("../app/card-frame-day.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-day.png?stardew_v=f975f7544b03");
   border-image-slice:8 fill;
   border-image-repeat:stretch;
   filter:drop-shadow(0 2px 5px rgba(120,80,30,0.08));
@@ -1679,16 +1679,16 @@ body.night .monitor-page .seasonal-footer:before{
 }
 .monitor-card:hover{
   transform:translateY(-2px);
-  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=f975f7544b03");
   filter:drop-shadow(0 4px 12px rgba(180,120,40,0.22));
 }
 .monitor-card.scene-active{
-  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=f975f7544b03");
   filter:drop-shadow(0 4px 14px rgba(214,158,64,0.32));
   transform:translateY(-2px);
 }
 .monitor-card.offline{
-  border-image-source:url("../app/card-frame-offline.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-offline.png?stardew_v=f975f7544b03");
   filter:drop-shadow(0 2px 4px rgba(0,0,0,0.04));
 }
 
@@ -2239,19 +2239,19 @@ body.night .monitor-page .seasonal-footer:before{
    夜间模式组件深度调色 (月夜冷杉蓝调)
    ======================================================== */
 .night .monitor-card{
-  border-image-source:url("../app/card-frame-night.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-night.png?stardew_v=f975f7544b03");
   filter:drop-shadow(0 3px 8px rgba(0,0,0,0.4));
 }
 .night .monitor-card:hover{
-  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=f975f7544b03");
   filter:drop-shadow(0 5px 14px rgba(84,138,191,0.35));
 }
 .night .monitor-card.scene-active{
-  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=f975f7544b03");
   filter:drop-shadow(0 5px 16px rgba(244,194,100,0.35));
 }
 .night .monitor-card.offline{
-  border-image-source:url("../app/card-frame-offline-night.png?stardew_v=e9d312b369f7");
+  border-image-source:url("../app/card-frame-offline-night.png?stardew_v=f975f7544b03");
   filter:drop-shadow(0 2px 5px rgba(0,0,0,0.3));
 }
 .night .monitor-card .node-city,
@@ -2489,8 +2489,8 @@ body.night .monitor-page .seasonal-footer:before{
 .music-actions{display:flex;align-items:center;justify-content:center;gap:9px;margin:2px auto 0;width:min(150px,100%)}
 .music-actions:before,.music-actions:after{content:"";height:1px;background:currentColor;opacity:.4;flex:1}
 #music-toggle{display:grid;place-items:center;flex:none;width:40px;height:36px;min-height:36px;padding:6px 8px;border:0;border-radius:0;background:none;box-shadow:none;color:inherit;cursor:pointer}
-.music-symbol{display:block;width:24px;height:24px;background:currentColor;mask:url("../ui/pixelarticons/play.svg?stardew_v=e9d312b369f7") center / contain no-repeat}
-#music-toggle[aria-pressed="true"] .music-symbol{mask-image:url("../ui/pixelarticons/pause.svg?stardew_v=e9d312b369f7")}
+.music-symbol{display:block;width:24px;height:24px;background:currentColor;mask:url("../ui/pixelarticons/play.svg?stardew_v=f975f7544b03") center / contain no-repeat}
+#music-toggle[aria-pressed="true"] .music-symbol{mask-image:url("../ui/pixelarticons/pause.svg?stardew_v=f975f7544b03")}
 #music-toggle:hover{color:#095563}
 #music-toggle:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .night .scene-music{color:#e5edee}
@@ -2511,7 +2511,7 @@ body.night .monitor-page .seasonal-footer:before{
 .landscape-preview .site-sign-copy{position:absolute;inset:43% 9% 13.5%;display:grid;place-items:center;text-align:center;--sign-size:24px}
 .landscape-preview .site-sign strong{min-width:0;max-width:100%;font-family:system-ui,"Microsoft YaHei",sans-serif;font-size:var(--sign-size);line-height:1.12;font-weight:800;letter-spacing:.045em;color:#4b2d13;overflow-wrap:anywhere;text-wrap:balance}
 .landscape-preview .time-sign{position:absolute;z-index:4;top:26px;right:clamp(22px,3.5vw,64px);width:var(--weather-width);height:var(--face-height);min-width:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;color:#4b3421}
-.landscape-preview .time-frame{position:absolute;inset:0;display:block;background:url("../ui/estate/clock.png?stardew_v=e9d312b369f7") center / 100% 100% no-repeat;image-rendering:pixelated;pointer-events:none}
+.landscape-preview .time-frame{position:absolute;inset:0;display:block;background:url("../ui/estate/clock.png?stardew_v=f975f7544b03") center / 100% 100% no-repeat;image-rendering:pixelated;pointer-events:none}
 .landscape-preview .time-sign-copy{position:absolute;inset:12% 25% 12% 9%;display:grid;grid-template-columns:auto 1fr;align-content:center;align-items:baseline;gap:1px 6px;text-align:left}
 .landscape-preview .time-sign span#season-time{font-size:10px;line-height:1.4;white-space:nowrap}
 .landscape-preview .time-sign strong{font-size:20px;line-height:1.25}
@@ -2779,8 +2779,8 @@ body.night .monitor-page .seasonal-footer:before{
 }
 
 /* The HUD uses single-color symbols on a 24-unit grid, like the music controls. */
-.landscape-preview { --menu-art:url("../ui/estate/panel.png?stardew_v=e9d312b369f7"); --sun:url("../ui/pixelarticons/sun.svg?stardew_v=e9d312b369f7"); --moon:url("../ui/pixelarticons/moon.svg?stardew_v=e9d312b369f7"); --sky-symbol:var(--sun); }
-.landscape-preview.night { --menu-art:url("../ui/estate/panel-night.png?stardew_v=e9d312b369f7"); --sky-symbol:var(--moon); }
+.landscape-preview { --menu-art:url("../ui/estate/panel.png?stardew_v=f975f7544b03"); --sun:url("../ui/pixelarticons/sun.svg?stardew_v=f975f7544b03"); --moon:url("../ui/pixelarticons/moon.svg?stardew_v=f975f7544b03"); --sky-symbol:var(--sun); }
+.landscape-preview.night { --menu-art:url("../ui/estate/panel-night.png?stardew_v=f975f7544b03"); --sky-symbol:var(--moon); }
 .landscape-preview[data-farm-art="native"] .farm-hero {
   --board-width:clamp(182px,20vw,232px);--board-height:60px;
   --board-rim:8px;--board-inset:14px;
@@ -2809,7 +2809,7 @@ body.night .monitor-page .seasonal-footer:before{
 .landscape-preview[data-farm-art="native"] .time-frame {
   content:"";display:block;position:absolute;inset:0;width:auto;height:auto;
   border:solid transparent;border-width:var(--board-rim);
-  border-image:url("../ui/estate/clock.png?stardew_v=e9d312b369f7") 12 fill / 1 stretch;
+  border-image:url("../ui/estate/clock.png?stardew_v=f975f7544b03") 12 fill / 1 stretch;
   background:none;image-rendering:pixelated;pointer-events:none;
 }
 .landscape-preview[data-farm-art="native"].night .site-sign::before {filter:brightness(.88) saturate(.85);}
@@ -2845,12 +2845,12 @@ body.night .monitor-page .seasonal-footer:before{
   .landscape-preview[data-farm-art="native"] .time-sign #farm-weather {width:22px;}
   .landscape-preview .time-sign #farm-weather::after {width:18px;height:18px;}
 }
-.landscape-preview[data-weather="cloud"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=e9d312b369f7#cloud"); }
-.landscape-preview[data-weather="fog"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=e9d312b369f7#fog"); }
-.landscape-preview[data-weather="rain"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=e9d312b369f7#rain"); }
-.landscape-preview[data-weather="storm"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=e9d312b369f7#storm"); }
-.landscape-preview[data-weather="snow"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=e9d312b369f7#snow"); }
-.landscape-preview[data-weather="wind"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=e9d312b369f7#wind"); }
+.landscape-preview[data-weather="cloud"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=f975f7544b03#cloud"); }
+.landscape-preview[data-weather="fog"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=f975f7544b03#fog"); }
+.landscape-preview[data-weather="rain"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=f975f7544b03#rain"); }
+.landscape-preview[data-weather="storm"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=f975f7544b03#storm"); }
+.landscape-preview[data-weather="snow"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=f975f7544b03#snow"); }
+.landscape-preview[data-weather="wind"] { --sky-symbol:url("../ui/weather-symbols.svg?stardew_v=f975f7544b03#wind"); }
 .landscape-preview .time-sign .weather-symbol {
   position:absolute;top:50%;right:8%;transform:translateY(-50%);display:grid;place-items:center;
   width:36px;height:36px;border:0;padding:0;box-shadow:none;background:transparent;color:#573516;cursor:pointer;
@@ -2863,16 +2863,16 @@ body.night .monitor-page .seasonal-footer:before{
 .landscape-preview .weather-symbol:disabled { opacity:1;cursor:default; }
 #farm-temperature {color:inherit;text-decoration:none;}
 #farm-temperature[href] {pointer-events:auto;text-decoration:underline dotted;text-underline-offset:3px;}
-.landscape-preview #music-toggle .music-symbol { mask-image:url("../ui/estate/play.png?stardew_v=e9d312b369f7"); }
-.landscape-preview #music-toggle[aria-pressed="true"] .music-symbol { mask-image:url("../ui/estate/pause.png?stardew_v=e9d312b369f7"); }
-.landscape-preview .search input {background-image:url("../ui/estate/search.png?stardew_v=e9d312b369f7");image-rendering:pixelated;}
+.landscape-preview #music-toggle .music-symbol { mask-image:url("../ui/estate/play.png?stardew_v=f975f7544b03"); }
+.landscape-preview #music-toggle[aria-pressed="true"] .music-symbol { mask-image:url("../ui/estate/pause.png?stardew_v=f975f7544b03"); }
+.landscape-preview .search input {background-image:url("../ui/estate/search.png?stardew_v=f975f7544b03");image-rendering:pixelated;}
 .landscape-preview .stat-icon .transfer-arrows { display:none; }
 .landscape-preview .monitor-page .monitor-card {
   border-image:var(--menu-art) 12 / 7px stretch;
-  background:#fcebc6 url("../ui/estate/paper.png?stardew_v=e9d312b369f7") center / 100% 100% no-repeat;
+  background:#fcebc6 url("../ui/estate/paper.png?stardew_v=f975f7544b03") center / 100% 100% no-repeat;
 }
 .landscape-preview.night .monitor-page .monitor-card {
-  background:#242f58 url("../ui/estate/paper-night.png?stardew_v=e9d312b369f7") center / 100% 100% no-repeat;
+  background:#242f58 url("../ui/estate/paper-night.png?stardew_v=f975f7544b03") center / 100% 100% no-repeat;
 }
 .landscape-preview .monitor-card .building-base,.stardew-modal-portrait img { image-rendering:pixelated; }
 .landscape-preview .farm-warp {
@@ -2880,7 +2880,7 @@ body.night .monitor-page .seasonal-footer:before{
   border:4px solid transparent;border-image:var(--menu-art) 12 fill / 4px stretch;
   position:relative; background:none;
 }
-.farm-warp::after { content:"";position:absolute;inset:0;background:url("../ui/estate/warp.png?stardew_v=e9d312b369f7") center / 22px 22px no-repeat; }
+.farm-warp::after { content:"";position:absolute;inset:0;background:url("../ui/estate/warp.png?stardew_v=f975f7544b03") center / 22px 22px no-repeat; }
 .farm-warp:is(:focus-visible,:hover,[aria-pressed="true"]) { outline:2px solid #61a75b;outline-offset:1px; }
 .card-footer-row .farm-warp { order:1; }
 .view-list .col-host { display:flex;align-items:center;gap:5px; }
@@ -2925,11 +2925,11 @@ body.night .monitor-page .seasonal-footer:before{
 :is([data-weather="rain"],[data-weather="storm"]) .farm-weather-layer { background:rgba(43,61,91,.16); }
 :is([data-weather="rain"],[data-weather="storm"],[data-weather="snow"],[data-weather="wind"]) .farm-weather-layer i {
   display:block;animation:farm-precipitation calc(var(--speed)*1.2s) var(--delay) linear infinite;
-  background-image:url("../ui/estate/raindrop.png?stardew_v=e9d312b369f7");
+  background-image:url("../ui/estate/raindrop.png?stardew_v=f975f7544b03");
 }
-[data-weather="snow"] .farm-weather-layer i { width:12px;background-image:url("../ui/estate/snowflake.png?stardew_v=e9d312b369f7");animation-duration:calc(var(--speed)*5s); }
-[data-weather="wind"] .farm-weather-layer i { width:9px;background-image:url("../ui/estate/leaf.png?stardew_v=e9d312b369f7");animation-duration:calc(var(--speed)*5.5s); }
-[data-weather="wind"][data-season="spring"] .farm-weather-layer i { background-image:url("../ui/estate/petal.png?stardew_v=e9d312b369f7"); }
+[data-weather="snow"] .farm-weather-layer i { width:12px;background-image:url("../ui/estate/snowflake.png?stardew_v=f975f7544b03");animation-duration:calc(var(--speed)*5s); }
+[data-weather="wind"] .farm-weather-layer i { width:9px;background-image:url("../ui/estate/leaf.png?stardew_v=f975f7544b03");animation-duration:calc(var(--speed)*5.5s); }
+[data-weather="wind"][data-season="spring"] .farm-weather-layer i { background-image:url("../ui/estate/petal.png?stardew_v=f975f7544b03"); }
 @keyframes farm-precipitation { to { top:102%;transform:translateX(-48px); } }
 @media(prefers-reduced-motion:reduce) { .farm-weather-layer i { animation:none !important;display:none !important; } }
 

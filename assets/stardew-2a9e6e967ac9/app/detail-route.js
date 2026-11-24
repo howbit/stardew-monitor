@@ -4,7 +4,6 @@
   function enter(fromHome) {
     if (!isDetail()) return;
     if (fromHome) {
-      sessionStorage.removeItem('farm-detail-mode');
       sessionStorage.setItem('farm-detail-origin', JSON.stringify({
         hash: location.hash, page: location.pathname + location.search, y: scrollY,
         scene: window.farmDetailScene?.(),

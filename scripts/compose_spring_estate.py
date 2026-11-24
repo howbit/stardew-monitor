@@ -151,6 +151,59 @@ def left_woodland(season):
                     (-38, 374), (9, 419), (-62, 467)]:
         stone = tile(outdoors(season), 7, 9) if season == "winter" else tile("Maps/springobjects.png", 343 % 24, 343 // 24)
         props.append((foot + rng.randint(-4, 4), x + rng.randint(-6, 6), stone))
+    # Put the denser canopy on the outside, with smaller growth beside the farm.
+    for x, foot, kind in [(-173, 103, "pine"), (-157, 160, "oak"), (-194, 211, "maple"),
+                          (-142, 264, "pine"), (-184, 329, "oak"), (-146, 381, "maple"),
+                          (-193, 441, "pine")]:
+        props.append((foot, x, plant_tree(season, kind)))
+    for x, foot, species_id in [(-129, 193, 2), (-23, 292, 1), (-157, 444, 3)]:
+        props.append((foot, x, woodland_detail(season, species_id, 0)))
+    props.extend(woodland_understory(season))
+    return props
+
+
+def woodland_understory(season):
+    """Group shrubs and ground cover near tree bases, leaving irregular gaps."""
+    rng = Random(907)
+    bushes = "TileSheets/bushes.png"
+    low_x = 32 * SEASONS.index(season)
+    low = [cut(bushes, x, 224, 16, 32) for x in (low_x, low_x + 16)]
+    x, y, height = {"spring": (0, 0, 48), "summer": (0, 96, 32),
+                    "fall": (0, 48, 48), "winter": (64, 48, 48)}[season]
+    tall = cut(bushes, x, y, 32, height)
+    shrubs = [(-183, 72, tall), (-117, 131, low[1]), (-32, 151, low[0]),
+              (-159, 186, tall), (-59, 215, tall), (-129, 243, low[0]),
+              (-182, 267, low[1]), (-30, 271, low[1]), (-107, 286, tall),
+              (-149, 320, tall), (-58, 333, low[0]), (-23, 359, tall),
+              (-196, 380, low[1]), (-83, 394, low[1]), (-129, 420, tall),
+              (-29, 437, low[0]), (-173, 473, tall), (-78, 479, low[0])]
+    props = [(foot, x, sprite.crop(sprite.getbbox())) for x, foot, sprite in shrubs]
+
+    grass_row = {"spring": 0, "summer": 1, "fall": 2, "winter": 4}[season]
+    grass = [cut("TerrainFeatures/grass.png", x * 15, grass_row * 20, 15, 20) for x in range(3)]
+    sheet = "Maps/springobjects.png"
+    weed_ids = {"spring": (674, 675, 676), "summer": (784, 785, 792),
+                "fall": (452, 786, 794), "winter": ()}[season]
+    weeds = [tile(sheet, idx % 24, idx // 24) for idx in weed_ids]
+    if season == "winter":
+        weeds = [tile(outdoors(season), 7, row) for row in (9, 10, 12)]
+    cover = grass + weeds
+    for cx, cy, spread, count in [(-170, 83, 25, 9), (-101, 151, 25, 7), (-42, 176, 24, 8),
+                                   (-174, 223, 30, 11), (-86, 257, 17, 6), (-157, 302, 32, 12),
+                                   (-50, 360, 24, 11), (-172, 397, 26, 8), (-104, 441, 27, 10),
+                                   (-46, 467, 23, 9)]:
+        for i in range(count):
+            x = cx + rng.randint(-spread, spread)
+            foot = cy + rng.randint(-12, 12)
+            props.append((foot, x, rng.choice(cover)))
+
+    forage = {"spring": (16, 18, 22), "summer": (396, 398, 402),
+              "fall": (404, 408, 410), "winter": (283, 414, 418)}[season]
+    for x, foot, idx in [(-123, 118, 294), (-70, 183, forage[0]), (-151, 204, 295),
+                         (-108, 264, 294), (-175, 288, 343), (-66, 313, forage[1]),
+                         (-125, 365, 295), (-33, 413, 294), (-166, 452, forage[2])]:
+        sprite = tile(outdoors(season), 7, 9) if season == "winter" and idx == 343 else tile(sheet, idx % 24, idx // 24)
+        props.append((foot, x, sprite))
     return props
 
 

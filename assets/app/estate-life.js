@@ -3,7 +3,7 @@
 
   const host = document.querySelector('.hero-scene');
   if (!host || !window.estateCamera || document.body.dataset.farmArt !== 'native') return;
-  const root = new URL('/assets/landscape/native-spring-estate/', document.currentScript.src);
+  const root = farmAsset('assets/landscape/native-spring-estate/');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const width = 1728, height = 464;
   const world = document.createElement('div');

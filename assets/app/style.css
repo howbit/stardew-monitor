@@ -129,7 +129,7 @@
 .monitor-card .ping-cell.critical strong{color:#c4382d}
 
 /* Separate game-sprite clusters: the centre intentionally stays empty. */
-.seasonal-footer{--season-atlas:url("/assets/app/seasonal-atlas-spring.png?stardew_v=a076355a0cc6");position:relative;height:142px;margin:23px -18px -18px;overflow:hidden;border-top:1px solid rgba(139,92,49,.38);background:linear-gradient(180deg,rgba(255,250,231,.34),rgba(255,246,218,.95) 68%,#ead49f 69%,#d5bb79 100%);isolation:isolate}
+.seasonal-footer{--season-atlas:url("../app/seasonal-atlas-spring.png?stardew_v=8b3cc57073b3");position:relative;height:142px;margin:23px -18px -18px;overflow:hidden;border-top:1px solid rgba(139,92,49,.38);background:linear-gradient(180deg,rgba(255,250,231,.34),rgba(255,246,218,.95) 68%,#ead49f 69%,#d5bb79 100%);isolation:isolate}
 .seasonal-footer:after{content:"";position:absolute;left:39%;right:39%;bottom:0;height:18px;background:linear-gradient(180deg,transparent,rgba(236,211,157,.18));pointer-events:none}
 .season-cluster{position:absolute;bottom:0;width:36%;height:140px;pointer-events:none}
 .season-cluster-left{left:0}
@@ -212,7 +212,7 @@ body[data-season="winter"] .seasonal-footer{background:linear-gradient(180deg,rg
   border-top:2px solid #a97748;
   border-bottom:5px solid #8b6244;
   background-color:#fff2d2;
-  background-image:url("/assets/app/seasonal-footer-sprite-v1.png?stardew_v=a076355a0cc6");
+  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=8b3cc57073b3");
   background-repeat:no-repeat;
   background-size:100% 400%;
   background-position:center top;
@@ -224,7 +224,7 @@ body[data-season="winter"] .seasonal-footer{background:linear-gradient(180deg,rg
 .seasonal-footer .season-cluster{display:none}
 body[data-season] .seasonal-footer{
   background-color:#fff2d2;
-  background-image:url("/assets/app/seasonal-footer-sprite-v1.png?stardew_v=a076355a0cc6");
+  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=8b3cc57073b3");
   background-repeat:no-repeat;
   background-size:100% 400%;
 }

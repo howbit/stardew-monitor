@@ -244,7 +244,7 @@
       this.wsTimeoutTimer = null;
       this.connection = 'loading';
       this.retryDelay = 2000;
-      this.lastSnapshotAt = 0;
+      this.retryCount = 0;
       this.paused = false;
       this.apiBase = this.detectApiBase();
       this.liveOnly = document.documentElement?.dataset?.cfsmMode === 'live';
@@ -526,60 +526,6 @@
       }
     }
 
-    async getServerDetail(nodeId) {
-      const node = this.currentNodes.find(n => n.rawId === nodeId) || this.currentNodes.find(n => n.id === nodeId);
-      const rawServer = node && this.rawServers.find(s => String(s.id) === node.rawId);
-
-      if (this.isLive && this.apiBase && rawServer) {
-        try {
-          const headers = this.requestHeaders();
-
-          const [detailRes, historyRes] = await Promise.allSettled([
-            fetch(`${this.apiBase}/api/server?id=${encodeURIComponent(rawServer.id)}`, { headers }).then(r => r.ok ? r.json() : null),
-            fetch(`${this.apiBase}/api/history/all?id=${encodeURIComponent(rawServer.id)}&hours=24`, { headers }).then(r => r.ok ? r.json() : null)
-          ]);
-
-          const detail = {...rawServer, ...(detailRes.status === 'fulfilled' ? detailRes.value : {})};
-          const history = historyRes.status === 'fulfilled' ? historyRes.value : null;
-
-          if (detail) {
-            // The detail endpoint may provide location fields omitted from the list.
-            for (const key of ['city', 'region', 'time_zone', 'timeZone', 'latitude', 'longitude']) {
-              if (detail[key] != null && detail[key] !== '') rawServer[key] = detail[key];
-            }
-            const location = resolveServerLocation(rawServer, this.siteConfig, this.apiBase);
-            if (node) {
-              node.location = location;
-              node.city = location.city || '地区未配置';
-            }
-            return {
-              ...node,
-              id: node?.id || detail.name || detail.id,
-              rawId: detail.id,
-              city: location.city || '地区未配置',
-              location,
-              online: node.online, building:node.building,
-              cpuModel:detail.cpu_info, cores:metric(detail.cpu_cores), arch:detail.arch, os:detail.os, kernel:detail.kernel_version,
-              virtualization:detail.virtualization || detail.virt_type,
-              totalRx:formatBytes(metric(detail.net_rx)), totalTx:formatBytes(metric(detail.net_tx)),
-              bootTime:node.bootTime, days:node.days, lastUpdated:node.lastUpdated, ip:node.ip,
-              ramTotalMB:metric(detail.ram_total), ramUsedMB:metric(detail.ram_used), diskTotalMB:metric(detail.disk_total),
-              diskUsedMB:metric(detail.disk_used), swapTotalMB:metric(detail.swap_total), swapUsedMB:metric(detail.swap_used),
-              diskIo:detail.disk, tcpConn:metric(detail.tcp_conn), udpConn:metric(detail.udp_conn), processes:metric(detail.processes),
-              price:billingPrice(detail, this.siteConfig),
-              expireDate:enabled(this.siteConfig?.show_expire) ? detail.expire_date : null,
-              netInSpeed:node.net[0], netOutSpeed:node.net[1], netRxTotal:node.trf[0], netTxTotal:node.trf[1],
-              trafficLimit:node.trf[2], ping:node.ping, routeData:node.routeData, load:node.load,
-              history:Array.isArray(history) ? history.map(h=>({ts:timestamp(h.timestamp), cpu:metric(h.cpu),
-                ram:metric(h.ram_used) !== null && detail.ram_total > 0 ? 100*h.ram_used/detail.ram_total : null})) : []
-            };
-          }
-        } catch {}
-      }
-
-      return this.isLive || this.liveOnly ? null : this.getMockServerDetail(nodeId, node);
-    }
-
     getMockServerDetail(nodeId, node) {
       const id = node?.id || nodeId;
       const mockDatabase = {
@@ -786,6 +732,8 @@
         });
         this.boundEvents = true;
       }
+      if (this.connection === 'auth') this.siteConfig = null;
+      this.retryCount = 0;
       this.paused = false;
       return this.refresh();
     }
@@ -793,6 +741,8 @@
     disconnect() {
       clearTimeout(this.syncTimer);
       clearTimeout(this.wsTimeoutTimer);
+      clearTimeout(this.renderTimer);
+      this.renderTimer = null;
       const ws = this.ws;
       this.ws = null;
       if (ws) ws.close();
@@ -801,10 +751,12 @@
     schedule(delay) {
       clearTimeout(this.syncTimer);
       if (document.hidden || this.paused || (!this.liveOnly && !this.isLive)) return;
-      this.syncTimer = setTimeout(() => this.refresh(), delay);
+      this.syncTimer = setTimeout(() => this.isLive ? this.connectWebSocket() : this.refresh(), delay);
     }
 
     retryLater() {
+      if (this.retryCount >= 6) return;
+      this.retryCount += 1;
       this.schedule(this.retryDelay);
       this.retryDelay = Math.min(this.retryDelay * 2, 60000);
     }
@@ -825,7 +777,7 @@
         if (!this.apiBase) throw new Error('请通过 CF-Server-Monitor 站点打开主题。');
         const options = {headers:this.requestHeaders(), cache:'no-store', signal:AbortSignal.timeout(15000)};
         const [config, response] = await Promise.all([
-          fetch(this.apiBase + '/api/config', options).then(async res => {
+          this.siteConfig || fetch(this.apiBase + '/api/config', options).then(async res => {
             if (res.status === 403 && options.headers['X-Turnstile-Verified'])
               res = await fetch(this.apiBase + '/api/config', {cache:'no-store', signal:options.signal});
             return res.ok ? res.json() : null;
@@ -874,9 +826,7 @@
         else this.updateStatsFromNodes();
         this.isLive = true;
         this.lastError = null;
-        this.lastSnapshotAt = Date.now();
         if (!this.paused) this.connection = 'ready';
-        this.schedule(60000);
         if (!document.hidden && !this.paused) this.connectWebSocket();
         this.notify();
       } catch (error) {
@@ -932,7 +882,6 @@
         if (ws !== this.ws) return;
         this.subscription = JSON.stringify({type:'subscribe',scope:'all',ids:this.rawServers.map(s => s.id)});
         ws.send(this.subscription);
-        this.retryDelay = 2000;
         const minutes = Number(this.siteConfig?.frontend_ws_timeout_minutes);
         if (minutes > 0) this.wsTimeoutTimer = setTimeout(() => {
           this.paused = true;
@@ -947,12 +896,17 @@
         try { message = JSON.parse(event.data); } catch { return; }
         if (message.type !== 'batchUpdate' || !Array.isArray(message.updates)) return;
         this.duringSnapshot?.push(...message.updates);
-        const {updated,unknown} = this.applyUpdates(message.updates);
-        if (unknown && !this.pending && Date.now() - this.lastSnapshotAt > 5000) this.refresh();
-        if (!updated) return;
-        this.currentNodes = this.rawServers.map(s => this.normalizeServer(s));
-        this.updateStatsFromNodes();
-        this.notify();
+        if (!this.applyUpdates(message.updates).updated) return;
+        this.retryCount = 0;
+        this.retryDelay = 2000;
+        if (this.renderTimer) return;
+        this.renderTimer = setTimeout(() => {
+          this.renderTimer = null;
+          this.currentNodes = this.rawServers.map(s => this.normalizeServer(s));
+          this.updateStatsFromNodes();
+          this.connection = 'ready';
+          this.notify();
+        }, 1000);
       };
       ws.onclose = () => {
         if (ws !== this.ws) return;

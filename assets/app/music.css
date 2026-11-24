@@ -11,8 +11,8 @@
 .music-actions{display:flex;align-items:center;justify-content:center;gap:9px;margin:2px auto 0;width:min(150px,100%)}
 .music-actions:before,.music-actions:after{content:"";height:1px;background:currentColor;opacity:.4;flex:1}
 #music-toggle{display:grid;place-items:center;flex:none;width:40px;height:36px;min-height:36px;padding:6px 8px;border:0;border-radius:0;background:none;box-shadow:none;color:inherit;cursor:pointer}
-.music-symbol{display:block;width:24px;height:24px;background:currentColor;mask:url("../ui/pixelarticons/play.svg?stardew_v=ad0115cfa1f6") center / contain no-repeat}
-#music-toggle[aria-pressed="true"] .music-symbol{mask-image:url("../ui/pixelarticons/pause.svg?stardew_v=ad0115cfa1f6")}
+.music-symbol{display:block;width:24px;height:24px;background:currentColor;mask:url("../ui/pixelarticons/play.svg?stardew_v=c3f9c5d114c6") center / contain no-repeat}
+#music-toggle[aria-pressed="true"] .music-symbol{mask-image:url("../ui/pixelarticons/pause.svg?stardew_v=c3f9c5d114c6")}
 #music-toggle:hover{color:#095563}
 #music-toggle:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .night .scene-music{color:#e5edee}

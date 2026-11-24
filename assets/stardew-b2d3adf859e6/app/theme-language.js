@@ -22,6 +22,7 @@
     '尚缺机房时区或坐标，部分当地信息暂不可用。':['Some local details need the data center’s time zone or coordinates.','一部の現地情報にはデータセンターのタイムゾーン・座標が必要です。'],
     '机房时区和坐标尚未配置，暂时无法计算当地时间与日出日落。':['Set the data center’s time zone and coordinates to see local time, sunrise and sunset.','現地時刻と日の出・日の入りを表示するには、データセンターのタイムゾーンと座標を設定してください。'],
     '我的服务器':['My servers','サーバー一覧'], '全部':['All','すべて'], '亚洲':['Asia','アジア'], '美洲':['Americas','南北アメリカ'], '欧洲':['Europe','ヨーロッパ'],
+    '非洲':['Africa','アフリカ'], '大洋洲':['Oceania','オセアニア'], '南极洲':['Antarctica','南極'], '未分区':['Unassigned','地域未設定'],
     '实时流量':['Live traffic','現在の通信量'], '全部节点':['Total nodes','全ノード'], '在线':['Online','オンライン'], '离线':['Offline','オフライン'],
     '管理后台':['Admin dashboard','管理画面'], '界面语言':['Language','表示言語'], '示例数据':['Demo data','サンプルデータ'],
     '服务器统计':['Server statistics','サーバー統計'], '地区筛选':['Filter by region','地域で絞り込み'], '卡片视图':['Cards','カード表示'], '列表视图':['List','リスト表示'],

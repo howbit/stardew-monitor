@@ -11,7 +11,7 @@
 .landscape-preview .site-sign-copy{position:absolute;inset:43% 9% 13.5%;display:grid;place-items:center;text-align:center;--sign-size:24px}
 .landscape-preview .site-sign strong{min-width:0;max-width:100%;font-family:system-ui,"Microsoft YaHei",sans-serif;font-size:var(--sign-size);line-height:1.12;font-weight:800;letter-spacing:.045em;color:#4b2d13;overflow-wrap:anywhere;text-wrap:balance}
 .landscape-preview .time-sign{position:absolute;z-index:4;top:26px;right:clamp(22px,3.5vw,64px);width:var(--weather-width);height:var(--face-height);min-width:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;color:#4b3421}
-.landscape-preview .time-frame{position:absolute;inset:0;display:block;background:url("/assets/stardew-611c5e0c15d5/ui/estate/clock.png") center / 100% 100% no-repeat;image-rendering:pixelated;pointer-events:none}
+.landscape-preview .time-frame{position:absolute;inset:0;display:block;background:url("/assets/stardew-b2d3adf859e6/ui/estate/clock.png") center / 100% 100% no-repeat;image-rendering:pixelated;pointer-events:none}
 .landscape-preview .time-sign-copy{position:absolute;inset:12% 25% 12% 9%;display:grid;grid-template-columns:auto 1fr;align-content:center;align-items:baseline;gap:1px 6px;text-align:left}
 .landscape-preview .time-sign span#season-time{font-size:10px;line-height:1.4;white-space:nowrap}
 .landscape-preview .time-sign strong{font-size:20px;line-height:1.25}
@@ -275,8 +275,8 @@
 }
 
 /* The HUD uses single-color symbols on a 24-unit grid, like the music controls. */
-.landscape-preview { --menu-art:url("/assets/stardew-611c5e0c15d5/ui/estate/panel.png"); --sun:url("/assets/stardew-611c5e0c15d5/ui/pixelarticons/sun.svg"); --moon:url("/assets/stardew-611c5e0c15d5/ui/pixelarticons/moon.svg"); --sky-symbol:var(--sun); }
-.landscape-preview.night { --menu-art:url("/assets/stardew-611c5e0c15d5/ui/estate/panel-night.png"); --sky-symbol:var(--moon); }
+.landscape-preview { --menu-art:url("/assets/stardew-b2d3adf859e6/ui/estate/panel.png"); --sun:url("/assets/stardew-b2d3adf859e6/ui/pixelarticons/sun.svg"); --moon:url("/assets/stardew-b2d3adf859e6/ui/pixelarticons/moon.svg"); --sky-symbol:var(--sun); }
+.landscape-preview.night { --menu-art:url("/assets/stardew-b2d3adf859e6/ui/estate/panel-night.png"); --sky-symbol:var(--moon); }
 .landscape-preview[data-farm-art="native"] .farm-hero {
   --board-width:clamp(182px,20vw,232px);--board-height:60px;
   --board-rim:8px;--board-inset:14px;
@@ -305,7 +305,7 @@
 .landscape-preview[data-farm-art="native"] .time-frame {
   content:"";display:block;position:absolute;inset:0;width:auto;height:auto;
   border:solid transparent;border-width:var(--board-rim);
-  border-image:url("/assets/stardew-611c5e0c15d5/ui/estate/clock.png") 12 fill / 1 stretch;
+  border-image:url("/assets/stardew-b2d3adf859e6/ui/estate/clock.png") 12 fill / 1 stretch;
   background:none;image-rendering:pixelated;pointer-events:none;
 }
 .landscape-preview[data-farm-art="native"].night .site-sign::before {filter:brightness(.88) saturate(.85);}
@@ -341,12 +341,12 @@
   .landscape-preview[data-farm-art="native"] .time-sign #farm-weather {width:22px;}
   .landscape-preview .time-sign #farm-weather::after {width:18px;height:18px;}
 }
-.landscape-preview[data-weather="cloud"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#cloud"); }
-.landscape-preview[data-weather="fog"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#fog"); }
-.landscape-preview[data-weather="rain"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#rain"); }
-.landscape-preview[data-weather="storm"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#storm"); }
-.landscape-preview[data-weather="snow"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#snow"); }
-.landscape-preview[data-weather="wind"] { --sky-symbol:url("/assets/stardew-611c5e0c15d5/ui/weather-symbols.svg#wind"); }
+.landscape-preview[data-weather="cloud"] { --sky-symbol:url("/assets/stardew-b2d3adf859e6/ui/weather-symbols.svg#cloud"); }
+.landscape-preview[data-weather="fog"] { --sky-symbol:url("/assets/stardew-b2d3adf859e6/ui/weather-symbols.svg#fog"); }
+.landscape-preview[data-weather="rain"] { --sky-symbol:url("/assets/stardew-b2d3adf859e6/ui/weather-symbols.svg#rain"); }
+.landscape-preview[data-weather="storm"] { --sky-symbol:url("/assets/stardew-b2d3adf859e6/ui/weather-symbols.svg#storm"); }
+.landscape-preview[data-weather="snow"] { --sky-symbol:url("/assets/stardew-b2d3adf859e6/ui/weather-symbols.svg#snow"); }
+.landscape-preview[data-weather="wind"] { --sky-symbol:url("/assets/stardew-b2d3adf859e6/ui/weather-symbols.svg#wind"); }
 .landscape-preview .time-sign .weather-symbol {
   position:absolute;top:50%;right:8%;transform:translateY(-50%);display:grid;place-items:center;
   width:36px;height:36px;border:0;padding:0;box-shadow:none;background:transparent;color:#573516;cursor:pointer;
@@ -359,16 +359,16 @@
 .landscape-preview .weather-symbol:disabled { opacity:1;cursor:default; }
 #farm-temperature {color:inherit;text-decoration:none;}
 #farm-temperature[href] {pointer-events:auto;text-decoration:underline dotted;text-underline-offset:3px;}
-.landscape-preview #music-toggle .music-symbol { mask-image:url("/assets/stardew-611c5e0c15d5/ui/estate/play.png"); }
-.landscape-preview #music-toggle[aria-pressed="true"] .music-symbol { mask-image:url("/assets/stardew-611c5e0c15d5/ui/estate/pause.png"); }
-.landscape-preview .search input {background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/search.png");image-rendering:pixelated;}
+.landscape-preview #music-toggle .music-symbol { mask-image:url("/assets/stardew-b2d3adf859e6/ui/estate/play.png"); }
+.landscape-preview #music-toggle[aria-pressed="true"] .music-symbol { mask-image:url("/assets/stardew-b2d3adf859e6/ui/estate/pause.png"); }
+.landscape-preview .search input {background-image:url("/assets/stardew-b2d3adf859e6/ui/estate/search.png");image-rendering:pixelated;}
 .landscape-preview .stat-icon .transfer-arrows { display:none; }
 .landscape-preview .monitor-page .monitor-card {
   border-image:var(--menu-art) 12 / 7px stretch;
-  background:#fcebc6 url("/assets/stardew-611c5e0c15d5/ui/estate/paper.png") center / 100% 100% no-repeat;
+  background:#fcebc6 url("/assets/stardew-b2d3adf859e6/ui/estate/paper.png") center / 100% 100% no-repeat;
 }
 .landscape-preview.night .monitor-page .monitor-card {
-  background:#242f58 url("/assets/stardew-611c5e0c15d5/ui/estate/paper-night.png") center / 100% 100% no-repeat;
+  background:#242f58 url("/assets/stardew-b2d3adf859e6/ui/estate/paper-night.png") center / 100% 100% no-repeat;
 }
 .landscape-preview .monitor-card .building-base,.stardew-modal-portrait img { image-rendering:pixelated; }
 .landscape-preview .farm-warp {
@@ -376,7 +376,7 @@
   border:4px solid transparent;border-image:var(--menu-art) 12 fill / 4px stretch;
   position:relative; background:none;
 }
-.farm-warp::after { content:"";position:absolute;inset:0;background:url("/assets/stardew-611c5e0c15d5/ui/estate/warp.png") center / 22px 22px no-repeat; }
+.farm-warp::after { content:"";position:absolute;inset:0;background:url("/assets/stardew-b2d3adf859e6/ui/estate/warp.png") center / 22px 22px no-repeat; }
 .farm-warp:is(:focus-visible,:hover,[aria-pressed="true"]) { outline:2px solid #61a75b;outline-offset:1px; }
 .card-footer-row .farm-warp { order:1; }
 .view-list .col-host { display:flex;align-items:center;gap:5px; }
@@ -421,11 +421,11 @@
 :is([data-weather="rain"],[data-weather="storm"]) .farm-weather-layer { background:rgba(43,61,91,.16); }
 :is([data-weather="rain"],[data-weather="storm"],[data-weather="snow"],[data-weather="wind"]) .farm-weather-layer i {
   display:block;animation:farm-precipitation calc(var(--speed)*1.2s) var(--delay) linear infinite;
-  background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/raindrop.png");
+  background-image:url("/assets/stardew-b2d3adf859e6/ui/estate/raindrop.png");
 }
-[data-weather="snow"] .farm-weather-layer i { width:12px;background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/snowflake.png");animation-duration:calc(var(--speed)*5s); }
-[data-weather="wind"] .farm-weather-layer i { width:9px;background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/leaf.png");animation-duration:calc(var(--speed)*5.5s); }
-[data-weather="wind"][data-season="spring"] .farm-weather-layer i { background-image:url("/assets/stardew-611c5e0c15d5/ui/estate/petal.png"); }
+[data-weather="snow"] .farm-weather-layer i { width:12px;background-image:url("/assets/stardew-b2d3adf859e6/ui/estate/snowflake.png");animation-duration:calc(var(--speed)*5s); }
+[data-weather="wind"] .farm-weather-layer i { width:9px;background-image:url("/assets/stardew-b2d3adf859e6/ui/estate/leaf.png");animation-duration:calc(var(--speed)*5.5s); }
+[data-weather="wind"][data-season="spring"] .farm-weather-layer i { background-image:url("/assets/stardew-b2d3adf859e6/ui/estate/petal.png"); }
 @keyframes farm-precipitation { to { top:102%;transform:translateX(-48px); } }
 @media(prefers-reduced-motion:reduce) { .farm-weather-layer i { animation:none !important;display:none !important; } }
 

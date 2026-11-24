@@ -24,8 +24,11 @@
     if (typeof chosenRoutes !== 'undefined') {
       for (const [node, route] of saved.routes || []) chosenRoutes.set(node, route);
     }
-    const region = Array.from(document.querySelectorAll('.region-tab')).find(el => el.dataset.region === saved.region);
-    region?.click();
+    function restoreRegion() {
+      const region = Array.from(document.querySelectorAll('.region-tab')).find(el => el.dataset.region === saved.region);
+      region?.click();
+    }
+    restoreRegion();
     const search = document.querySelector('#search');
     if (search && search.value !== saved.search) {
       search.value = saved.search;
@@ -36,6 +39,7 @@
     if (!document.querySelector('#cards article') && window.cfsmAdapter) {
       const unsubscribe = window.cfsmAdapter.subscribe(() => {
         unsubscribe();
+        restoreRegion();
         requestAnimationFrame(restore);
       });
     }

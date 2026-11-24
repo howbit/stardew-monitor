@@ -50,9 +50,9 @@ function buildingMarkup(node){
     const base = `<img class="building-base" alt="" src="${window.nodeFarmSprite(node.building)}">`;
     return base + (node.online ? `<img class="window-light" alt="" src="${window.nodeFarmSprite(node.building,true)}">` : '');
   }
-  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-611c5e0c15d5/buildings3/${node.building}.png">`;
-  const base = `<img class="building-base" alt="" src="/assets/stardew-611c5e0c15d5/lights3/${node.building}-night.png">`;
-  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-611c5e0c15d5/lights3/${node.building}-light.png">` : '';
+  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-b2d3adf859e6/buildings3/${node.building}.png">`;
+  const base = `<img class="building-base" alt="" src="/assets/stardew-b2d3adf859e6/lights3/${node.building}-night.png">`;
+  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-b2d3adf859e6/lights3/${node.building}-light.png">` : '';
   return base + lights;
 }
 
@@ -77,24 +77,34 @@ function getNodeOSInfo(node) {
   return { name: 'Debian 12', arch: 'amd64' };
 }
 
+const regionLabels = {asia:'亚洲', americas:'美洲', europe:'欧洲', africa:'非洲', oceania:'大洋洲', antarctica:'南极洲', unknown:'未分区'};
+// CLDR territory containment (UN M.49); show Antarctica separately in this UI.
 const regionCodes = {
-  asia: new Set('AE AF AM AZ BD BH BN BT CC CN CX CY GE HK ID IL IN IO IQ IR JO JP KG KH KP KR KW KZ LA LB LK MM MN MO MV MY NP OM PH PK PS QA SA SG SY TH TJ TL TM TR TW UZ VN YE'.split(' ')),
-  americas: new Set('AG AI AR AW BB BL BM BO BQ BR BS BZ CA CL CO CR CU CW DM DO EC FK GD GF GL GP GT GY HN HT JM KN KY LC MF MQ MS MX NI PA PE PM PR PY SR SV SX TC TT US UY VC VE VG VI'.split(' ')),
-  europe: new Set('AD AL AT AX BA BE BG BY CH CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS RU SE SI SJ SK SM UA VA XK'.split(' '))
+  asia: new Set('AE AF AM AZ BD BH BN BT CN CY GE HK ID IL IN IQ IR JO JP KG KH KP KR KW KZ LA LB LK MM MN MO MV MY NP OM PH PK PS QA SA SG SY TH TJ TL TM TR TW UZ VN YE'.split(' ')),
+  americas: new Set('AG AI AR AW BB BL BM BO BQ BR BS BV BZ CA CL CO CR CU CW DM DO EC FK GD GF GL GP GS GT GY HN HT JM KN KY LC MF MQ MS MX NI PA PE PM PR PY SR SV SX TC TT US UY VC VE VG VI'.split(' ')),
+  europe: new Set('AD AL AT AX BA BE BG BY CH CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS RU SE SI SJ SK SM UA VA XK'.split(' ')),
+  africa: new Set('AO BF BI BJ BW CD CF CG CI CM CV DJ DZ EA EG EH ER ET GA GH GM GN GQ GW IC IO KE KM LR LS LY MA MG ML MR MU MW MZ NA NE NG RE RW SC SD SH SL SN SO SS ST SZ TD TF TG TN TZ UG YT ZA ZM ZW'.split(' ')),
+  oceania: new Set('AS AU CC CK CX FJ FM GU HM KI MH MP NC NF NR NU NZ PF PG PN PW SB TK TO TV UM VU WF WS'.split(' ')),
+  antarctica: new Set(['AQ'])
 };
 function getNodeRegion(node) {
   const code = node.location?.regionCode;
-  if (code) return Object.keys(regionCodes).find(region => regionCodes[region].has(code));
+  const byCountry = code && Object.keys(regionCodes).find(region => regionCodes[region].has(code));
+  if (byCountry) return byCountry;
   const city = (node.city || '').toLowerCase();
   const tz = (node.location?.timeZone || '').toLowerCase();
   if (tz.startsWith('asia/') || /香港|东京|新加坡/.test(city)) return 'asia';
   if (tz.startsWith('america/') || /洛杉矶|圣何塞/.test(city)) return 'americas';
   if (tz.startsWith('europe/') || /法兰克福|特罗姆瑟|柏林|伦敦/.test(city)) return 'europe';
+  if (tz.startsWith('africa/')) return 'africa';
+  if (tz.startsWith('australia/') || tz === 'pacific/auckland') return 'oceania';
+  if (tz.startsWith('antarctica/')) return 'antarctica';
+  return 'unknown';
 }
 
 function getNodeSubtitleParts(node) {
   const city = node.city || '未知';
-  const region = {asia:'亚洲',americas:'美洲',europe:'欧洲'}[getNodeRegion(node)];
+  const region = regionLabels[getNodeRegion(node)];
   const place = [nodeText(region), nodeText(city)].filter(value => value && value !== '—' && value !== 'N/A').join(' · ');
   return [place, getNodeOSInfo(node).name].filter(value => value && value !== '—' && value !== 'N/A');
 }
@@ -155,13 +165,13 @@ function systemBadge(node, detailUrl) {
   const os = node.os?.trim();
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
-  const src = file ? '/os-icons/'+file : '/assets/stardew-611c5e0c15d5/ui/lucide/hard-drive.svg';
+  const src = file ? '/os-icons/'+file : '/assets/stardew-b2d3adf859e6/ui/lucide/hard-drive.svg';
   return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="'+nodeText('查看系统版本')+' '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
 
 function metricIcon(name) {
-  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-611c5e0c15d5/ui/lucide/'+name+'.svg)"></i>';
+  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-b2d3adf859e6/ui/lucide/'+name+'.svg)"></i>';
 }
 
 function percentTrack(used, label) {
@@ -269,6 +279,34 @@ function renderSegmentedMeter(label, percent, type, isOnline, capacity = '') {
 
 
 let currentRegion = 'all';
+const regionBar = document.querySelector('.region-tabs');
+function syncRegionFilters() {
+  if (!regionBar) return;
+  const available = new Set((nodes || []).map(getNodeRegion));
+  if (currentRegion !== 'all' && !available.has(currentRegion)) currentRegion = 'all';
+  const keys = ['all', ...Object.keys(regionLabels).filter(key => available.has(key))];
+  const signature = keys.join(',');
+  if (regionBar.dataset.regions !== signature) {
+    const focused = regionBar.contains(document.activeElement) && document.activeElement.dataset.region;
+    const buttons = keys.map(key => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'region-tab';
+      button.dataset.region = key;
+      button.textContent = nodeText(key === 'all' ? '全部' : regionLabels[key]);
+      return button;
+    });
+    regionBar.replaceChildren(...buttons);
+    regionBar.dataset.regions = signature;
+    if (focused) (buttons.find(b => b.dataset.region === focused) || buttons[0]).focus({preventScroll:true});
+  }
+  for (const button of regionBar.children) {
+    const selected = button.dataset.region === currentRegion;
+    if (button.getAttribute('aria-pressed') === String(selected)) continue;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  }
+}
 let currentView = 'grid';
 try {
   const requested = new URLSearchParams(location.search).get('view');
@@ -301,7 +339,7 @@ function regionFlag(node) {
   if (!/^[A-Z]{2}$/.test(code || '') || !flagNames.of(code)) return '';
   const name = flagNames.of(code);
   const title = [name, nodeText(node.city)].filter((value,index,all) => value && all.indexOf(value) === index).join(' · ');
-  const base = window.cfsmAdapter?.isLive || !node.demo ? '/flags/' : '/assets/stardew-611c5e0c15d5/ui/demo-flags/';
+  const base = window.cfsmAdapter?.isLive || !node.demo ? '/flags/' : '/assets/stardew-b2d3adf859e6/ui/demo-flags/';
   return `<span class="region-flag summary-country" title="${escapeText(title)}"><img alt="${escapeText(name)}" src="${base}${code.toLowerCase()}.svg"></span>`;
 }
 
@@ -407,6 +445,7 @@ function syncCardElement(current, next) {
 }
 
 function render(){
+  syncRegionFilters();
   const search = document.querySelector('#search');
   const q = search ? search.value.trim().toLowerCase() : '';
   const previous = new Map(Array.from(cards.children, el => [el.dataset.key, el]));
@@ -462,9 +501,8 @@ function render(){
     const isOnline = node.online;
     card.classList.toggle('menu-card', menuCard);
     const subtitleParts = getNodeSubtitleParts(node);
-    const subtitle = menuCard
-      ? regionFlag(node) || '<span>'+escapeText(nodeText(node.city || '地区未配置'))+'</span>'
-      : escapeText(subtitleParts.join(' · '));
+    const subtitle = escapeText(subtitleParts.join(' · '));
+    const flag = menuCard ? regionFlag(node) : '';
     const [down, up] = (node.net || []).map(v => escapeText(v));
     const upNet = isOnline && up ? up : '—', downNet = isOnline && down ? down : '—';
     const [rx,tx,limit] = node.trf || [];
@@ -480,9 +518,10 @@ function render(){
     const ipTag = node.ip ? '<span class="ip-tag">'+escapeText(node.ip)+'</span>' : '';
     const billing = menuCard ? billingMarkup(node) : '';
     const title = menuCard
-      ? '<div class="node-identity"><div class="node-name-line"><h3><a class="name" href="'+detailUrl+'" title="'+nodeText('查看节点详情')+'"></a></h3>'+systemBadge(node,detailUrl)+ipTag+
-        '</div><div class="node-sub">'+subtitle+(node.remark ? '<span>'+escapeText(node.remark)+'</span>' : '')+
-        report+'</div>'+(billing ? '<div class="node-billing">'+billing+'</div>' : '')+'</div>'
+      ? '<div class="node-identity"><div class="node-name-line">'+flag+'<h3><a class="name" href="'+detailUrl+'" title="'+nodeText('查看节点详情')+'"></a></h3></div>'+
+        '<div class="node-sub">'+systemBadge(node,detailUrl)+ipTag+(flag ? '' : '<span>'+escapeText(nodeText(node.city || '地区未配置'))+'</span>')+report+'</div>'+
+        (node.remark ? '<div class="node-remark">'+escapeText(node.remark)+'</div>' : '')+
+        (billing ? '<div class="node-billing">'+billing+'</div>' : '')+'</div>'
       : '<div class="node-identity"><h3 class="name"></h3><div class="node-sub">'+subtitle+'</div><div class="node-tags-row">'+ipTag+expiryBadge+'</div></div>';
     const traffic = '<div class="card-traffic-row"><span class="traffic-col"><span class="traffic-lbl">↑ 上传</span><strong class="traffic-val">'+
       upNet+'</strong></span><span class="traffic-col"><span class="traffic-lbl">↓ 下载</span><strong class="traffic-val">'+downNet+
@@ -689,19 +728,12 @@ if (window.cfsmAdapter && typeof window.cfsmAdapter.subscribe === 'function') {
   });
 }
 
-const regionTabs = document.querySelectorAll('.region-tab');
-for (const tab of regionTabs) {
-  tab.addEventListener('click', () => {
-    for (const t of regionTabs) {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    }
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
-    currentRegion = tab.dataset.region || 'all';
-    render();
-  });
-}
+regionBar?.addEventListener('click', event => {
+  const button = event.target.closest('button[data-region]');
+  if (!button || button.dataset.region === currentRegion) return;
+  currentRegion = button.dataset.region;
+  render();
+});
 
 const viewBtns = document.querySelectorAll('.view-opt');
 for (const btn of viewBtns) {

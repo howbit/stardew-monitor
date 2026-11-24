@@ -15,7 +15,7 @@
     ['fall-night', '秋夜', "Fall (Raven's Descent)"],
     ['winter-day', '冬日', 'Winter (The Wind Can Be Still)'],
     ['winter-night', '冬夜', 'Night Market']
-  ].map(([id, scene, title]) => [id, { scene, title, file: `/assets/stardew-026a01301234/music/${id}.ogg` }]));
+  ].map(([id, scene, title]) => [id, { scene, title, file: `/assets/stardew-cf07ea140e06/music/${id}.ogg` }]));
   const storageKey = 'cfsm_scene_music_v1';
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(storageKey)) || {}; } catch {}

@@ -50,9 +50,9 @@ function buildingMarkup(node){
     const base = `<img class="building-base" alt="" src="${window.nodeFarmSprite(node.building)}">`;
     return base + (node.online ? `<img class="window-light" alt="" src="${window.nodeFarmSprite(node.building,true)}">` : '');
   }
-  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-026a01301234/buildings3/${node.building}.png">`;
-  const base = `<img class="building-base" alt="" src="/assets/stardew-026a01301234/lights3/${node.building}-night.png">`;
-  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-026a01301234/lights3/${node.building}-light.png">` : '';
+  if(!night) return `<img class="building-base" alt="" src="/assets/stardew-cf07ea140e06/buildings3/${node.building}.png">`;
+  const base = `<img class="building-base" alt="" src="/assets/stardew-cf07ea140e06/lights3/${node.building}-night.png">`;
+  const lights = node.online ? `<img class="building-lights" alt="" src="/assets/stardew-cf07ea140e06/lights3/${node.building}-light.png">` : '';
   return base + lights;
 }
 
@@ -165,13 +165,13 @@ function systemBadge(node, detailUrl) {
   const os = node.os?.trim();
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
-  const src = file ? '/os-icons/'+file : '/assets/stardew-026a01301234/ui/lucide/hard-drive.svg';
+  const src = file ? '/os-icons/'+file : '/assets/stardew-cf07ea140e06/ui/lucide/hard-drive.svg';
   return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="'+nodeText('查看系统版本')+' '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
 
 function metricIcon(name) {
-  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-026a01301234/ui/lucide/'+name+'.svg)"></i>';
+  return '<i class="metric-icon" aria-hidden="true" style="--glyph:url(/assets/stardew-cf07ea140e06/ui/lucide/'+name+'.svg)"></i>';
 }
 
 function percentTrack(used, label) {
@@ -339,7 +339,7 @@ function regionFlag(node) {
   if (!/^[A-Z]{2}$/.test(code || '') || !flagNames.of(code)) return '';
   const name = flagNames.of(code);
   const title = [name, nodeText(node.city)].filter((value,index,all) => value && all.indexOf(value) === index).join(' · ');
-  const base = window.cfsmAdapter?.isLive || !node.demo ? '/flags/' : '/assets/stardew-026a01301234/ui/demo-flags/';
+  const base = window.cfsmAdapter?.isLive || !node.demo ? '/flags/' : '/assets/stardew-cf07ea140e06/ui/demo-flags/';
   return `<span class="region-flag summary-country" title="${escapeText(title)}"><img alt="${escapeText(name)}" src="${base}${code.toLowerCase()}.svg"></span>`;
 }
 

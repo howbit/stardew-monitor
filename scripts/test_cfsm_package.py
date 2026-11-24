@@ -1,6 +1,7 @@
 """Exercise the zipped theme with same-origin CFSM responses in an isolated browser."""
 
 import mimetypes
+import os
 import re
 import sys
 from io import BytesIO
@@ -473,7 +474,8 @@ def check(archive, browser):
 if __name__ == '__main__':
     with ZipFile(ROOT / 'release/stardew-monitor.zip') as archive, sync_playwright() as driver:
         assert archive.testzip() is None
-        browser = driver.chromium.launch(channel='msedge' if sys.platform == 'win32' else None)
+        channel = os.getenv('STARDEW_TEST_BROWSER') or ('msedge' if sys.platform == 'win32' else None)
+        browser = driver.chromium.launch(channel=channel)
         check(archive, browser)
         browser.close()
     print('PASS: packaged assets, four seasons, day/night, music, weather credit, live and failed API, detail routes.')

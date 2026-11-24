@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "source": "https://concernedape.bandcamp.com/album/stardew-valley-ost",
+  "accepted": "2026-11-16：用户选择沿用当前试听版",
+  "crossfadeSeconds": 3,
+  "tracks": [
+    {
+      "id": "spring-day",
+      "scene": "春日",
+      "title": "Spring (It's A Big World Outside)",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/spring-its-a-big-world-outside",
+      "start": 40.987,
+      "end": 116.776,
+      "duration": 75.789433,
+      "lufs": -20.0,
+      "truePeakDb": -7.0,
+      "file": "spring-day.ogg"
+    },
+    {
+      "id": "spring-night",
+      "scene": "春夜",
+      "title": "Starwatcher (Maru's Theme)",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/starwatcher-marus-theme",
+      "start": 15.747,
+      "end": 75.747,
+      "duration": 59.999955,
+      "lufs": -20.0,
+      "truePeakDb": -6.91,
+      "file": "spring-night.ogg"
+    },
+    {
+      "id": "summer-day",
+      "scene": "夏日",
+      "title": "Summer (Nature's Crescendo)",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/summer-natures-crescendo",
+      "start": 26.207,
+      "end": 113.48,
+      "duration": 87.272744,
+      "lufs": -20.0,
+      "truePeakDb": -6.09,
+      "file": "summer-day.ogg"
+    },
+    {
+      "id": "summer-night",
+      "scene": "夏夜",
+      "title": "Dance Of The Moonlight Jellies",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/dance-of-the-moonlight-jellies",
+      "start": 6.853,
+      "end": 56.084,
+      "duration": 49.230794,
+      "lufs": -20.0,
+      "truePeakDb": -5.7,
+      "file": "summer-night.ogg"
+    },
+    {
+      "id": "fall-day",
+      "scene": "秋日",
+      "title": "Fall (The Smell Of Mushroom)",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/fall-the-smell-of-mushroom",
+      "start": 41.428,
+      "end": 89.428,
+      "duration": 47.999955,
+      "lufs": -20.01,
+      "truePeakDb": -5.4,
+      "file": "fall-day.ogg"
+    },
+    {
+      "id": "fall-night",
+      "scene": "秋夜",
+      "title": "Fall (Raven's Descent)",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/fall-ravens-descent",
+      "start": 14.284,
+      "end": 67.756,
+      "duration": 53.471927,
+      "lufs": -20.0,
+      "truePeakDb": -6.57,
+      "file": "fall-night.ogg"
+    },
+    {
+      "id": "winter-day",
+      "scene": "冬日",
+      "title": "Winter (The Wind Can Be Still)",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/winter-the-wind-can-be-still",
+      "start": 52.121,
+      "end": 131.032,
+      "duration": 78.910748,
+      "lufs": -20.0,
+      "truePeakDb": -6.38,
+      "file": "winter-day.ogg"
+    },
+    {
+      "id": "winter-night",
+      "scene": "冬夜",
+      "title": "Night Market",
+      "sourceUrl": "https://concernedape.bandcamp.com/track/night-market",
+      "start": 28.227,
+      "end": 110.513,
+      "duration": 82.285714,
+      "lufs": -20.0,
+      "truePeakDb": -4.11,
+      "file": "winter-night.ogg"
+    }
+  ]
+}

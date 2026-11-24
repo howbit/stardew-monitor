@@ -97,7 +97,8 @@ body.night{background:var(--night-paper)}
 .stat-icon .wilted-plant{width:23px;height:34px}
 .transfer-arrows{position:absolute;right:0;top:21px;width:18px;height:26px}
 .transfer-arrows svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
-.stat-copy{min-width:0}
+.stat-copy{min-width:0;flex:0 1 4rem}
+.stat.realtime .stat-copy{flex-basis:8rem}
 .stat-label{font-size:12px;font-weight:700;letter-spacing:.08em;margin-bottom:2px}
 .stat-value{display:flex;align-items:baseline;gap:5px;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
 .stat-value strong{font-size:32px;font-weight:650}
@@ -2137,12 +2138,17 @@ body.night .monitor-page .seasonal-footer:before{
   .site-sign{left:3%}
   .time-sign{right:3%}
   .summary-strip{padding:0 14px}
+  .stats{padding-inline:0}
   .stat{gap:7px;padding:0 7px}
   .stat-value strong{font-size:27px}
   .content-panel{padding:15px 15px 8px}
   .content-controls{align-items:stretch;flex-direction:column}
   .content-heading{width:100%}
   .content-panel .topbar,.content-panel .toolbar{width:100%}
+}
+@media(min-width:661px) and (max-width:800px){
+  .stat.realtime .stat-icon{width:32px}
+  .stat.realtime .stat-value strong{font-size:22px}
 }
 @media(max-width:660px){
   html,body{overflow-x:hidden;width:100%;max-width:100%}

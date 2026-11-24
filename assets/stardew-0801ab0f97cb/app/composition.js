@@ -40,10 +40,10 @@ const heroSources = heroArt ? {
   fall: { day: heroArt.dataset.fallDaySrc, night: heroArt.dataset.fallNightSrc },
   winter: { day: heroArt.dataset.winterDaySrc, night: heroArt.dataset.winterNightSrc }
 } : {
-  spring: { day: '/assets/stardew-073aca87fed1/landscape/spring-layered-v6/hero-day.png', night: '/assets/stardew-073aca87fed1/landscape/spring-layered-v6/hero-night.png' },
-  summer: { day: '/assets/stardew-073aca87fed1/landscape/summer-matched-v1/hero-day.png', night: '/assets/stardew-073aca87fed1/landscape/summer-matched-v1/hero-night.png' },
-  fall: { day: '/assets/stardew-073aca87fed1/landscape/fall-matched-v1/hero-day.png', night: '/assets/stardew-073aca87fed1/landscape/fall-matched-v1/hero-night.png' },
-  winter: { day: '/assets/stardew-073aca87fed1/landscape/winter-matched-v1/hero-day.png', night: '/assets/stardew-073aca87fed1/landscape/winter-matched-v1/hero-night.png' }
+  spring: { day: '/assets/stardew-0801ab0f97cb/landscape/spring-layered-v6/hero-day.png', night: '/assets/stardew-0801ab0f97cb/landscape/spring-layered-v6/hero-night.png' },
+  summer: { day: '/assets/stardew-0801ab0f97cb/landscape/summer-matched-v1/hero-day.png', night: '/assets/stardew-0801ab0f97cb/landscape/summer-matched-v1/hero-night.png' },
+  fall: { day: '/assets/stardew-0801ab0f97cb/landscape/fall-matched-v1/hero-day.png', night: '/assets/stardew-0801ab0f97cb/landscape/fall-matched-v1/hero-night.png' },
+  winter: { day: '/assets/stardew-0801ab0f97cb/landscape/winter-matched-v1/hero-day.png', night: '/assets/stardew-0801ab0f97cb/landscape/winter-matched-v1/hero-night.png' }
 };
 
 const Core = typeof window !== 'undefined' ? window.StardewScene : null;
@@ -53,7 +53,7 @@ window.estateSelectedNode = () => activeServerId;
 function paintLandscape(seasonKey, isNight) {
   const key = seasonKey + (isNight ? '-night' : '-day');
   const postcard = previewPostcards && postcardDescriptions[key];
-  const root = postcard ? '/assets/stardew-073aca87fed1/landscape/postcards-v1/' + key : '';
+  const root = postcard ? '/assets/stardew-0801ab0f97cb/landscape/postcards-v1/' + key : '';
   if (nativeFarm) document.body.dataset.farmArt = 'native';
   else delete document.body.dataset.farmArt;
   if (!nativeFarm && !postcard && seasonKey === 'spring') {
@@ -76,7 +76,7 @@ function resolveHeroSource(seasonKey, isNight) {
   if (nativeFarm) {
     const season = Object.hasOwn(farmCrops, seasonKey) ? seasonKey : 'spring';
     return {
-      src: `/assets/stardew-073aca87fed1/landscape/native-spring-estate/${season}-${isNight ? 'night' : 'day'}.png`,
+      src: `/assets/stardew-0801ab0f97cb/landscape/native-spring-estate/${season}-${isNight ? 'night' : 'day'}.png`,
       alt: nodeText('{scene}农场，主宅、水井和两片祝尼魔农田位于画面中央，{crops}', {scene:nodeText(seasonNames[season]+(isNight ? '夜' : '日')),crops:nodeText(farmCrops[season])})
     };
   }
@@ -90,11 +90,19 @@ function resolveHeroSource(seasonKey, isNight) {
 
 let visitor = window.estateStart.visitor;
 let phaseOverride = window.estateStart.demo ? window.estateStart.night : null;
+const scenePlace = () => activeServerId === null ? visitor : window.cfsmAdapter.getServerLocation(activeServerId);
+window.farmDetailScene = () => ({place:scenePlace(), phaseOverride, server:activeServerId, season:seasonSelect.value});
+window.restoreDetailScene = scene => {
+  activeServerId = scene.server;
+  seasonSelect.value = scene.season;
+  phaseOverride = scene.phaseOverride;
+  syncSceneCopy();
+};
 let currentTime;
 function syncSceneCopy() {
   window.cfsmAdapter?.expireSilentNodes?.();
   for (const el of document.querySelectorAll('[data-report]')) el.textContent = reportText(Number(el.dataset.report));
-  const place = activeServerId === null ? visitor : window.cfsmAdapter.getServerLocation(activeServerId);
+  const place = scenePlace();
   currentTime = Core.resolveScene(place);
   const manual = seasonSelect.value !== 'auto';
   const season = manual ? seasonSelect.value : (currentTime.season === 'autumn' ? 'fall' : currentTime.season);
@@ -125,7 +133,7 @@ function updateModularFooter(seasonKey, postcardRoot, isNight) {
   for (const [selector, side] of [['.flora-img', 'left'], ['.fence-img', 'right']]) {
     const img = document.querySelector(selector);
     if (img && nativeFarm) {
-      const src = `/assets/stardew-073aca87fed1/landscape/native-spring-estate/footer/${validSeason}-${isNight ? 'night' : 'day'}-${side}.png`;
+      const src = `/assets/stardew-0801ab0f97cb/landscape/native-spring-estate/footer/${validSeason}-${isNight ? 'night' : 'day'}-${side}.png`;
       if (img.getAttribute('src') !== src) img.src = src;
       continue;
     }
@@ -135,9 +143,9 @@ function updateModularFooter(seasonKey, postcardRoot, isNight) {
     }
     if (img) img.src = validSeason === 'spring'
       ? (side === 'right'
-        ? '/assets/stardew-073aca87fed1/landscape/spring-unified-footer-v2/footer-right.png'
-        : '/assets/stardew-073aca87fed1/landscape/spring-layered-v6/footer-left.png')
-      : `/assets/stardew-073aca87fed1/landscape/${validSeason}-matched-v1/footer-${side}.png`;
+        ? '/assets/stardew-0801ab0f97cb/landscape/spring-unified-footer-v2/footer-right.png'
+        : '/assets/stardew-0801ab0f97cb/landscape/spring-layered-v6/footer-left.png')
+      : `/assets/stardew-0801ab0f97cb/landscape/${validSeason}-matched-v1/footer-${side}.png`;
   }
 }
 

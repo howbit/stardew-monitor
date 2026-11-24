@@ -4,8 +4,10 @@
   function enter(fromHome) {
     if (!isDetail()) return;
     if (fromHome) {
+      sessionStorage.removeItem('farm-detail-mode');
       sessionStorage.setItem('farm-detail-origin', JSON.stringify({
         hash: location.hash, page: location.pathname + location.search, y: scrollY,
+        scene: window.farmDetailScene?.(),
         search: document.querySelector('#search')?.value || '',
         region: document.querySelector('.region-tab.active')?.dataset.region,
         routes: typeof chosenRoutes !== 'undefined' ? Array.from(chosenRoutes) : []
@@ -21,6 +23,7 @@
     const saved = JSON.parse(sessionStorage.getItem('farm-detail-origin') || 'null');
     if (!saved || saved.page !== location.pathname + location.search) return;
     sessionStorage.removeItem('farm-detail-origin');
+    if (saved.scene) window.restoreDetailScene?.(saved.scene);
     if (typeof chosenRoutes !== 'undefined') {
       for (const [node, route] of saved.routes || []) chosenRoutes.set(node, route);
     }

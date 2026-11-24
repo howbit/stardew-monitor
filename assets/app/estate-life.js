@@ -3,7 +3,7 @@
 
   const host = document.querySelector('.hero-scene');
   if (!host || !window.estateCamera || document.body.dataset.farmArt !== 'native') return;
-  const root = new URL('/assets/stardew-3640241ac13d/landscape/native-spring-estate/', document.currentScript.src);
+  const root = new URL('/assets/landscape/native-spring-estate/', document.currentScript.src);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const width = 1728, height = 464;
   const world = document.createElement('div');
@@ -299,7 +299,7 @@
   }
   async function loadImage(name, folder) {
     const img = new Image();
-    img.src = new URL(name, folder).href;
+    img.src = farmAsset(name, folder);
     await img.decode();
     return img;
   }
@@ -308,7 +308,7 @@
     if (!bundles.has(season)) {
       const folder = season === 'spring' ? root : new URL(season + '/', root);
       const bundle = Promise.all([
-        fetch(new URL('scene.json', folder)).then(response => {
+        fetch(farmAsset('scene.json', folder)).then(response => {
           if (!response.ok) throw new Error('Farm scene: ' + response.status);
           return response.json();
         }),

@@ -15,7 +15,8 @@ function renderStats(currentStats) {
       const val = currentStats && currentStats[e.key] !== undefined ? currentStats[e.key] : e.value;
       const unit = e.key === 'realtime' ? currentStats?.realtimeUnit ?? e.unit : e.unit;
       const detail = e.key === 'realtime' ? currentStats?.realtimeDetail ?? e.detail : e.detail;
-      return `<div class="stat ${e.key}"><div class="stat-icon"><img class="${e.icon}" src="${assetRoot}/${e.icon}.png" alt="${e.alt}">${e.key==='realtime'?`<span class="transfer-arrows">${arrowArt}</span>`:''}</div><div class="stat-copy"><div class="stat-label">${window.farmText?.(e.label) ?? e.label}</div><div class="stat-value"><strong>${val}</strong>${unit?`<span class="unit">${unit}</span>`:''}</div>${detail?`<div class="flow-breakdown">${detail}</div>`:''}</div></div>`;
+      const icon = `${assetRoot}/${e.icon}.png`;
+      return `<div class="stat ${e.key}"><div class="stat-icon"><img class="${e.icon}" src="${window.farmAsset?.(icon) ?? icon}" alt="${e.alt}">${e.key==='realtime'?`<span class="transfer-arrows">${arrowArt}</span>`:''}</div><div class="stat-copy"><div class="stat-label">${window.farmText?.(e.label) ?? e.label}</div><div class="stat-value"><strong>${val}</strong>${unit?`<span class="unit">${unit}</span>`:''}</div>${detail?`<div class="flow-breakdown">${detail}</div>`:''}</div></div>`;
     }).join('');
   }
   for (const element of document.querySelectorAll('[data-arrows]')) element.innerHTML = arrowArt;

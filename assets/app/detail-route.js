@@ -1,5 +1,7 @@
 (() => {
-  const asset = new URL('native-detail.html', document.currentScript.src);
+  const script = new URL(document.currentScript.src);
+  const asset = new URL('native-detail.html', script);
+  const revision = script.searchParams.get('stardew_v');
   const isDetail = () => /^#\/server\/[^/?#]+(?:\?.*)?$/.test(location.hash);
   function enter(fromHome) {
     if (!isDetail()) return;
@@ -13,6 +15,7 @@
       }));
     }
     asset.search = location.search;
+    if (revision) asset.searchParams.set('stardew_v', revision);
     asset.hash = location.hash;
     location.replace(asset.href);
   }

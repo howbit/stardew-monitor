@@ -1,6 +1,12 @@
 /* Resolve the initial camera subject before any seasonal art is requested. */
 (() => {
   const core = window.StardewScene;
+  const revision = document.documentElement.dataset.assetRevision;
+  window.farmAsset = (path, base) => {
+    const asset = new URL(path, base || document.baseURI);
+    if (revision) asset.searchParams.set('stardew_v', revision);
+    return asset.href;
+  };
   const url = new URL(location.href);
   // Older preview bookmarks pinned even ordinary reloads to spring daytime.
   if (url.searchParams.has('season') || url.searchParams.has('night')) {
@@ -26,5 +32,6 @@
   const season = demo?.[1] || (state.season === 'autumn' ? 'fall' : state.season);
   const night = demo ? demo[2] === 'night' : state.phase === 'night';
   window.estateStart = {visitor, season, night, demo: Boolean(demo)};
-  window.nodeFarmSprite = (id, windows = false) => '/assets/stardew-3640241ac13d/ui/estate/'+(windows ? 'windows/' : '')+encodeURIComponent(id)+'.png';
+  window.nodeFarmSprite = (id, windows = false) => window.farmAsset(
+    '/assets/ui/estate/' + (windows ? 'windows/' : '') + encodeURIComponent(id) + '.png');
 })();

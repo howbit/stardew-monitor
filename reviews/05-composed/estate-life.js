@@ -33,7 +33,7 @@
   const dayNames = {spring: '春日', summer: '夏日', fall: '秋日', winter: '冬日'};
   function seasonKey() {
     const season = document.body.dataset.season;
-    return document.body.dataset.farmArt === 'native' && !document.body.classList.contains('night') &&
+    return document.body.dataset.farmView !== 'detail' && document.body.dataset.farmArt === 'native' && !document.body.classList.contains('night') &&
       Object.hasOwn(dayNames, season) ? season : null;
   }
 
@@ -312,7 +312,8 @@
           if (!response.ok) throw new Error('Farm scene: ' + response.status);
           return response.json();
         }),
-        loadImage('sprites.png', folder), loadImage('ground.png', folder)
+        loadImage('sprites.' + (window.farmImageExtension || 'png'), folder),
+        loadImage('ground.' + (window.farmImageExtension || 'png'), folder)
       ]).catch(error => { bundles.delete(season); throw error; });
       bundles.set(season, bundle);
     }
@@ -349,7 +350,7 @@
     if (visible && !document.hidden) run(); else stop();
   }
   new MutationObserver(sync).observe(document.body, {attributes: true,
-    attributeFilter: ['class', 'data-season', 'data-farm-art']});
+    attributeFilter: ['class', 'data-season', 'data-farm-art', 'data-farm-view']});
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     if (visible) run(); else stop();

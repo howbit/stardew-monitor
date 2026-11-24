@@ -2,11 +2,14 @@
 
 import hashlib
 from html import escape
+from io import BytesIO
+import json
 import os
 import re
 from pathlib import Path
 from urllib.parse import urlsplit
 from zipfile import ZIP_DEFLATED, ZipFile
+from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,34 +53,25 @@ def runtime_config(html):
 
 def build():
     files = {}
-    entry = (PAGE / 'index.html').read_text(encoding='utf8')
-    entry = entry.replace('<html lang="zh-CN">', '<html lang="zh-CN" data-cfsm-mode="live">')
-    entry = entry.replace('星谷哨站 · 完整组合页', '星谷哨站').replace('星谷哨站完整页面预览', '星谷哨站监控面板')
-    # Only the interactive estate is distributed. These scripts belong to the old art previews.
-    entry = re.sub(r'^.*<script defer src="(?:bay-motion|crop-layer)\.js"></script>\n', '', entry, flags=re.M)
-    entry = re.sub(r' data-(spring|summer|fall|winter)-(day|night)-src="[^"]*"', '', entry)
-
-    def bundle_entry_ref(match):
-        attribute, url = match.groups()
-        path = (PAGE / url).resolve()
-        if not path.is_relative_to(ROOT):
-            raise ValueError(url)
-        if path.suffix not in ('.js', '.css'):
-            return match.group()
-        name = 'app/' + path.name
-        if name in files and files[name] != path:
-            raise ValueError('Duplicate script or stylesheet name: ' + name)
-        files[name] = path
-        if path.suffix == '.css':
-            for relative in re.findall(r'url\("([\w.-]+)"\)', path.read_text(encoding='utf8')):
-                files['app/' + relative] = path.parent / relative
-        return f'{attribute}="@THEME@/{name}"'
-
-    entry = re.sub(r'\b(src|href)="((?!https?:)[^"]+\.(?:css|js))"', bundle_entry_ref, entry)
-    entry = entry.replace('../01-stats/assets', '@THEME@/stats')
-    files['app/native-detail.html'] = PAGE / 'native-detail.html'
-    for name in ('detail.js', 'detail.css', 'LICENSES.txt'):
-        files['app/native-built/' + name] = PAGE / 'native-built' / name
+    built = PAGE / 'native-built/spa'
+    manifest = json.loads((built / 'build-files.json').read_text(encoding='utf8'))
+    for name in manifest['chunks']:
+        files['app/' + name] = built / name
+    main = manifest['entry']
+    entry = runtime_config(f"""<!doctype html>
+<html lang="zh-CN" data-cfsm-mode="live" data-farm-spa>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>星谷哨站</title>
+  <link rel="stylesheet" href="@THEME@/app/home.css">
+  <script type="module" src="@THEME@/app/{main}"></script>
+</head>
+<body class="landscape-preview" data-farm-art="native">
+  <div id="app"></div>
+</body>
+</html>""")
+    files['app/LICENSES.txt'] = built / 'LICENSES.txt'
     files['app/SunCalc-LICENSE.txt'] = ROOT / 'scene/vendor/SunCalc-LICENSE.txt'
     files['app/NotoSansCJK-LICENSE.txt'] = PAGE / 'NotoSansCJK-LICENSE.txt'
     files['app/Mikus-LICENSE.txt'] = PAGE / 'Mikus-LICENSE.txt'
@@ -89,46 +83,46 @@ def build():
                 files[path.relative_to(ASSETS).as_posix()] = path
     files['ui/weather-symbols.svg'] = ASSETS / 'ui/weather-symbols.svg'
 
+    page = (PAGE / 'index.html').read_text(encoding='utf8')
+    styles = []
+    for url in re.findall(r'<link rel="stylesheet" href="([^"]+)"', page):
+        path = (PAGE / url).resolve()
+        css = path.read_text(encoding='utf8')
+        for relative in re.findall(r'url\("([\w.-]+)"\)', css):
+            files['app/' + relative] = path.parent / relative
+        styles.append(re.sub(r'url\("([\w.-]+)"\)', r'url("@THEME@/app/\1")', css)
+                      .replace('../../assets/', '@THEME@/'))
     content = {}
     for name, path in sorted(files.items()):
-        data = path.read_bytes()
-        if name == 'app/native-detail.html':
-            detail = re.sub(r'src="../../scene/(?:vendor/)?([\w-]+\.js)"', r'src="\1"', data.decode('utf8'))
-            detail = detail.replace('<html lang="zh-CN">', '<html lang="zh-CN" data-cfsm-mode="live">')
-            data = runtime_config(re.sub(r'\b(src|href)="([\w./-]+\.(?:css|js))"',
-                                         r'\1="@THEME@/app/\2"', detail)).encode('utf8')
-        if path.suffix in ('.js', '.css'):
-            source = data.decode('utf8').replace('../../assets/ui/os-icons/', '/os-icons/')
-            if path.suffix == '.css':
-                source = re.sub(r'url\("([\w.-]+)"\)', r'url("@THEME@/app/\1")', source)
-            data = source.replace('../../assets/', '@THEME@/').encode('utf8')
-        content[name] = data
-    entry = runtime_config(entry.replace('../../assets/', '@THEME@/'))
+        if name.startswith('landscape/native-spring-estate/') and path.suffix == '.png':
+            converted = BytesIO()
+            with Image.open(path) as image:
+                image.save(converted, 'WEBP', lossless=True, exact=True, method=5)
+            content[name.removesuffix('.png') + '.webp'] = converted.getvalue()
+        else:
+            content[name] = path.read_bytes()
+    content['app/home.css'] = '\n'.join(styles).encode('utf8')
     # Pinned commits have immutable assets. Change their browser URLs without changing the repository paths.
     digest = hashlib.sha256(entry.encode('utf8'))
     for name, data in content.items():
         digest.update(name.encode('utf8') + b'\0' + hashlib.sha256(data).digest())
     revision = digest.hexdigest()[:12]
 
-    def stamp_html(html):
-        # Dynamic references and the detail navigation use the same release revision as these links.
-        html = html.replace('data-cfsm-mode="live">', f'data-cfsm-mode="live" data-asset-revision="{revision}">')
-        return re.sub(r'\b(src|href)="(@THEME@/[\w./-]+)"', rf'\1="\2?stardew_v={revision}"', html)
+    entry = entry.replace('data-farm-spa>', f'data-farm-spa data-asset-revision="{revision}">')
+    entry = entry.replace('@THEME@/app/home.css"', f'assets/app/home.css?stardew_v={revision}"')
+    entry = entry.replace('@THEME@/', 'assets/')
 
     OUTPUT.parent.mkdir(exist_ok=True)
     temporary = OUTPUT.with_suffix('.zip.tmp')
     with ZipFile(temporary, 'w', compression=ZIP_DEFLATED) as archive:
-        archive.writestr('index.html', stamp_html(entry).replace('@THEME@/', 'assets/'))
+        archive.writestr('index.html', entry)
         for name, data in content.items():
-            if name.endswith('.html'):
-                data = stamp_html(data.decode('utf8')).encode('utf8')
             if name.endswith('.css'):
                 data = re.sub(rb'url\((["\']?)(@THEME@/[\w./-]+)(#[\w-]+)?\1\)',
                               lambda m: b'url(' + m[1] + m[2] + f'?stardew_v={revision}'.encode()
                               + (m[3] or b'') + m[1] + b')', data)
-            base = b'assets/' if name.endswith('.js') else b'../'
-            archive.writestr('assets/' + name, data.replace(b'@THEME@/', base)
-                             if name.endswith(('.html', '.css', '.js')) else data)
+                data = data.replace(b'@THEME@/', b'../')
+            archive.writestr('assets/' + name, data)
     temporary.replace(OUTPUT)
     print(f'{OUTPUT} ({len(content) + 1} files, {OUTPUT.stat().st_size / 2**20:.1f} MiB)')
 

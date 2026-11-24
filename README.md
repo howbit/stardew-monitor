@@ -35,9 +35,13 @@ https://github.com/howbit/stardew-monitor/tree/dist
 
 ## 源码与自动构建
 
-`main` 存放源码和构建输入。推送到 `main` 或手动运行 **Build and publish theme** 后，GitHub Actions 会测试构建，并向 `dist` 追加提交。构建提交保留源码的提交说明和 SHA，产物目录直接使用 `assets/app`、`assets/landscape`、`assets/music`、`assets/stats` 和 `assets/ui`。
+`main` 存放源码和构建输入。首页和详情页共用 Vue 3、Vue Router 和一次应用启动。Vite 按路由拆包，详情图表在打开节点时加载。静态农场图在打包时转换为无损 WebP。
 
-用作 CF-Server-Monitor 自定义主题时，默认读取同站 API。独立部署时可通过 Actions Secrets 设置一个 Worker 的 `API_BASE`，以及可选的 `TITLE`、`BACKGROUND_IMAGE`、`CSP_API`、`CSP_STATIC`。跨域访问时，需在对应的 Worker 中把静态站点的 origin 加入 `CORS_ALLOWED_ORIGINS`。
+推送到 `main` 或手动运行 **Build and publish theme** 后，GitHub Actions 会测试构建，并向 `dist` 追加提交。构建提交保留源码的提交说明和 SHA，产物目录直接使用 `assets/app`、`assets/landscape`、`assets/music`、`assets/stats` 和 `assets/ui`。
+
+用作 CF-Server-Monitor 自定义主题时，默认读取同站 API。独立部署时可通过 Actions Secrets 设置 `API_BASE`。多个 Worker 地址用英文逗号分隔，每个连接只订阅其返回的节点，节点详情也从原 Worker 读取。可选项包括 `TITLE`、`BACKGROUND_IMAGE`、`CSP_API`、`CSP_STATIC`。
+
+跨域部署时，每个 Worker 的 `CORS_ALLOWED_ORIGINS` 都需要包含静态站点的 origin。私有异站 Worker 还需要由部署方提供该 origin 对应的 JWT。主题使用按 origin 区分的凭证，同站登录继续使用 CF-Server-Monitor 后台。
 
 工作流使用 `contents: write` 向 `dist` 追加提交。CF-Server-Monitor 可直接读取 `dist`。如果还要托管到 GitHub Pages，可以在 **Settings → Pages** 选择 `dist` 的根目录。通过 Actions 的 `GITHUB_TOKEN` 推送的提交不会触发 Pages 的分支部署，持续自动更新 Pages 需要单独的 Pages 部署工作流。[GitHub Pages 发布说明](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 

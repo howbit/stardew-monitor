@@ -23,6 +23,7 @@
   try { saved = JSON.parse(localStorage.getItem(storageKey)) || {}; } catch {}
   try { resumePoint = JSON.parse(sessionStorage.getItem(positionKey)); } catch {}
   let manuallyPaused = saved.enabled === false;
+  let homeVisible = true;
   // A fixed level prevents a hidden legacy volume preference from leaving music muted.
   const initialVolume = .4;
   function setPreference(paused) {
@@ -96,5 +97,12 @@
   }
   window.addEventListener('pageshow', restorePause);
   window.addEventListener('storage', event => { if (event.key === storageKey) restorePause(); });
-  if (!manuallyPaused) player.enable();
+  window.addEventListener('farm-home-visibility', event => {
+    homeVisible = event.detail;
+    if (!homeVisible) {
+      savePosition();
+      player.disable();
+    } else if (!manuallyPaused) player.enable();
+  });
+  if (!manuallyPaused && homeVisible) player.enable();
 })();

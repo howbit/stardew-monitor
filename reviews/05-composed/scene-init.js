@@ -2,7 +2,7 @@
 (() => {
   const core = window.StardewScene;
   const revision = document.documentElement.dataset.assetRevision;
-  const root = revision ? new URL('../../', document.currentScript.src) : document.baseURI;
+  const root = revision && document.currentScript ? new URL('../../', document.currentScript.src) : document.baseURI;
   window.farmAsset = (path, base) => {
     const asset = new URL(path, base || root);
     if (revision) asset.searchParams.set('stardew_v', revision);
@@ -33,6 +33,7 @@
   const season = demo?.[1] || (state.season === 'autumn' ? 'fall' : state.season);
   const night = demo ? demo[2] === 'night' : state.phase === 'night';
   window.estateStart = {visitor, season, night, demo: Boolean(demo)};
+  window.farmImageExtension = document.documentElement.dataset.farmSpa === undefined ? 'png' : 'webp';
   window.nodeFarmSprite = (id, windows = false) => window.farmAsset(
     '../../assets/ui/estate/' + (windows ? 'windows/' : '') + encodeURIComponent(id) + '.png');
 })();

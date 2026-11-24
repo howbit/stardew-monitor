@@ -51,10 +51,13 @@ def check(archive, browser):
     require_proof = False
     require_login = False
     sockets = []
+    visits = []
 
     def serve(route):
         url = urlsplit(route.request.url)
         path = unquote(url.path)
+        if url.hostname == 'monitor.test':
+            visits.append((path, route.request.resource_type))
         if url.hostname == 'api.open-meteo.com':
             return route.fulfill(json={'current': {'weather_code': 3, 'temperature_2m': 20}})
         if url.hostname == 'challenges.cloudflare.com':
@@ -134,12 +137,20 @@ def check(archive, browser):
     expect(page.locator('.system-badge img')).to_have_attribute('src', '/os-icons/os-debian.svg')
     check_system_fonts(page, ['#music-current', '.region-tab', '.monitor-card .name', '.credit-link',
                               '.site-sign strong', '#season-time', '.time-sign-copy strong', '#farm-temperature'])
+    assert not any('/ServerPage-' in path for path, _ in visits)
+    documents = [path for path, kind in visits if kind == 'document']
+    config_count = visits.count(('/api/config', 'fetch'))
+    server_list_count = visits.count(('/api/servers', 'fetch'))
     page.locator('.monitor-card .name').click()
     expect(page.locator('.host-name')).to_contain_text(NODE['name'])
     expect(page.locator('.history-note')).to_have_text('暂无数据')
     expect(page.locator('.time-btn')).to_have_count(9)
     check_system_fonts(page, ['.host-name > span:nth-last-child(2)', '.sysinfo-value', '.time-btn.active'])
     assert page.url.endswith('#/server/probe-1')
+    assert any('/ServerPage-' in path for path, _ in visits)
+    assert [path for path, kind in visits if kind == 'document'] == documents
+    assert visits.count(('/api/config', 'fetch')) == config_count
+    assert visits.count(('/api/servers', 'fetch')) == server_list_count
     page.reload()
     expect(page.locator('.host-name')).to_contain_text(NODE['name'])
     page.locator('.back-btn').click()
@@ -315,8 +326,17 @@ def check(archive, browser):
         return el === document.querySelector('.monitor-card') && name === document.activeElement &&
           el.getBoundingClientRect().top === top && getComputedStyle(el).transform === 'none' && el.textContent.includes('37.50');
     }""")
-    assert page.evaluate("""['2026-11-25','2026-11-24','2026-11-23','2026-02-30'].map(d => expiryInfo(d)?.text || '')""") == [
-        '剩余 1 天','今天到期','已过期 1 天','']
+    assert page.evaluate("""() => {
+        const node = cfsmAdapter.getNodes()[0], expiry = node.expireDate;
+        const texts = ['2026-11-25','2026-11-24','2026-11-23','2026-02-30'].map(date => {
+            node.expireDate = date;
+            renderNodes();
+            return document.querySelector('.summary-expiry b')?.textContent.trim() || '';
+        });
+        node.expireDate = expiry;
+        renderNodes();
+        return texts;
+    }""") == ['剩余 1 天','今天到期','已过期 1 天','']
     page.goto(SITE+'/?view=list')
     expect(page.locator('.server-summary .summary-expiry')).to_have_text('剩余 15 天')
     page.locator('.view-opt[data-view="grid"]').click()
@@ -471,11 +491,74 @@ def check(archive, browser):
     page.close()
 
 
+def check_multiple_workers(archive, browser):
+    secondary = 'https://other.test'
+    monitors = {'monitor.test': 'First Worker', 'other.test': 'Second Worker'}
+    page = browser.new_page()
+    visits, subscriptions = [], {}
+
+    def serve(route):
+        url = urlsplit(route.request.url)
+        if url.hostname not in monitors:
+            return route.abort()
+        headers = {'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Credentials': 'true'}
+        if url.path.startswith('/api/'):
+            visits.append((url.hostname, url.path))
+            node = dict(NODE, name=monitors[url.hostname])
+            # Shared ID detects cross-site identity bugs and wrongly routed detail links.
+            extra = dict(NODE, id='only-' + url.hostname)
+            payload = {'/api/config': {'site_title': monitors[url.hostname], 'is_public': True},
+                       '/api/servers': {'servers': [node, extra]}, '/api/server': node,
+                       '/api/history/all': []}[url.path]
+            return route.fulfill(json=payload, headers=headers)
+        if url.path.startswith(('/os-icons/', '/flags/')):
+            return route.fulfill(content_type='image/svg+xml', body='<svg xmlns="http://www.w3.org/2000/svg"/>')
+        name = unquote(url.path).lstrip('/') or 'index.html'
+        if name not in archive.namelist():
+            return route.fulfill(status=404)
+        data = archive.read(name)
+        if name == 'index.html':
+            data = data.replace(b'</head>',
+                                f'<meta name="apiBase" content="{SITE},{secondary}"></head>'.encode())
+        mime = 'text/javascript' if name.endswith('.js') else mimetypes.guess_type(name)[0]
+        return route.fulfill(body=data, content_type=mime)
+
+    def socket(ws):
+        url = urlsplit(ws.url)
+        ws.on_message(lambda message: subscriptions.update({(url.hostname, url.query): message}))
+
+    page.route('**/*', serve)
+    page.route_web_socket('**/api/ws*', socket)
+    page.goto(SITE)
+    expect(page.locator('#cards article')).to_have_count(4)
+    choose = page.get_by_role('link', name='Second Worker')
+    expect(choose).to_have_attribute('href', '#/server/probe-1?apiIndex=1')
+    expect(page.locator('.total strong')).to_have_text('4')
+    page.wait_for_timeout(120)
+    for host in monitors:
+        message = subscriptions[(host, 'subscribe=all')]
+        assert 'only-' + host in message, subscriptions
+        assert all('only-' + other not in message for other in monitors if host != other), subscriptions
+    choose.click()
+    expect(page.locator('.terminal-title')).to_have_text('Second Worker')
+    expect(page.locator('.history-note')).to_be_visible()
+    assert visits.count(('monitor.test', '/api/config')) == 1
+    assert visits.count(('other.test', '/api/config')) == 1
+    assert ('other.test', '/api/server') in visits and ('monitor.test', '/api/server') not in visits
+    assert ('other.test', '/api/history/all') in visits
+    page.locator('.back-btn').click()
+    expect(page.locator('#cards article')).to_have_count(4)
+    assert visits.count(('monitor.test', '/api/servers')) == 1
+    assert visits.count(('other.test', '/api/servers')) == 1
+    page.close()
+
+
 if __name__ == '__main__':
     with ZipFile(ROOT / 'release/stardew-monitor.zip') as archive, sync_playwright() as driver:
         assert archive.testzip() is None
         channel = os.getenv('STARDEW_TEST_BROWSER') or ('msedge' if sys.platform == 'win32' else None)
         browser = driver.chromium.launch(channel=channel)
         check(archive, browser)
+        check_multiple_workers(archive, browser)
         browser.close()
     print('PASS: packaged assets, four seasons, day/night, music, weather credit, live and failed API, detail routes.')

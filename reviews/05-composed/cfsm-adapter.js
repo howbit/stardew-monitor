@@ -233,7 +233,7 @@
   }
 
   class CFServerMonitorAdapter {
-    constructor() {
+    constructor(base, apiIndex = 0, grouped = false) {
       this.listeners = [];
       this.buildingOverrides = loadBuildingOverrides();
       this.siteConfig = null;
@@ -246,7 +246,10 @@
       this.retryDelay = 2000;
       this.retryCount = 0;
       this.paused = false;
-      this.apiBase = this.detectApiBase();
+      this.apiBase = base || this.detectApiBase();
+      this.apiIndex = apiIndex;
+      this.grouped = grouped;
+      this.active = false;
       this.liveOnly = document.documentElement?.dataset?.cfsmMode === 'live';
       this.currentNodes = [];
       if (!this.liveOnly) this.currentNodes = this.demoNodes();
@@ -282,6 +285,7 @@
     }
 
     requestHeaders() {
+      if (global.farmWorkers) return global.farmWorkers.workerHeaders(this.apiBase);
       const sameSite = this.apiBase === location.origin;
       const token = (sameSite && localStorage.getItem('jwt_token')) || localStorage.getItem(STORAGE_KEYS.JWT);
       const verified = sameSite && localStorage.getItem('turnstile_verified');
@@ -403,7 +407,8 @@
       const days = bootTime ? Math.max(0, Math.floor((Date.now() - bootTime) / 86400000)) : null;
       const v4 = Number(server.ip_v4) === 1, v6 = Number(server.ip_v6) === 1;
       const ip = v4 && v6 ? 'IPV4/6' : v4 ? 'IPV4' : v6 ? 'IPV6' : '';
-      const rawId = String(server.id || '');
+      const serverId = String(server.id || '');
+      const rawId = this.apiIndex ? this.apiBase + '::' + serverId : serverId;
       const displayId = String(server.name || server.id || 'Node');
       const building = this.buildingOverrides[rawId] ||
         this.buildingOverrides[displayId] ||
@@ -439,6 +444,10 @@
       return {
         id: displayId,
         rawId: rawId,
+        serverId,
+        apiIndex: this.apiIndex,
+        apiBase: this.apiBase,
+        latencyHours: Number(config.latency_window?.hours) || 2,
         city: loc.city || '地区未配置',
         os: server.os || server.platform || '',
         group: server.server_group, remark:server.public_remark,
@@ -481,7 +490,7 @@
     }
 
     updateStatsFromNodes() {
-      const ids = new Set(this.currentNodes.filter(n => n.online).map(n => n.rawId));
+      const ids = new Set(this.currentNodes.filter(n => n.online).map(n => n.serverId ?? n.rawId));
       const online = this.rawServers.filter(s => ids.has(String(s.id)));
       const combined = key => {
         const values = online.map(s => metric(s[key]));
@@ -494,6 +503,7 @@
       if (!statsPayload) return;
       const speedIn = metric(statsPayload.globalSpeedIn);
       const speedOut = metric(statsPayload.globalSpeedOut);
+      this.rates = {globalSpeedIn: speedIn, globalSpeedOut: speedOut};
       const totalSpeed = speedIn + speedOut;
 
       let speedDisplay = '0.0';
@@ -521,7 +531,7 @@
         offline: String(statsPayload.offline !== undefined ? statsPayload.offline : this.currentNodes.filter(n => !n.online).length)
       };
 
-      if (typeof global.updateStats === 'function') {
+      if (!this.grouped && typeof global.updateStats === 'function') {
         global.updateStats(this.currentStats);
       }
     }
@@ -714,21 +724,35 @@
       };
     }
 
+    activate() {
+      if (this.active) return this.pending;
+      this.active = true;
+      if (!this.boundEvents) return this.init();
+      if (!this.paused && !document.hidden) return this.isLive ? this.connectWebSocket() : this.refresh();
+    }
+
+    deactivate() {
+      this.active = false;
+      this.disconnect();
+    }
+
     init() {
+      this.active = true;
       if (!this.boundEvents) {
-        const resume = () => { if (!document.hidden && !this.paused) this.refresh(); };
+        const resume = () => { if (this.active && !document.hidden && !this.paused) this.refresh(); };
         document.addEventListener('visibilitychange', () => {
           if (document.hidden) this.disconnect();
           else resume();
         });
         global.addEventListener?.('online', resume);
         global.addEventListener?.('offline', () => {
+          if (!this.active) return;
           this.disconnect();
           if (this.isLive && !this.paused) this.connection = 'stale';
           this.notify();
         });
         global.addEventListener?.('storage', event => {
-          if (['jwt_token', 'turnstile_verified'].includes(event.key) || event.key === null) resume();
+          if (event.key === null || /^(jwt_token|turnstile_verified)(:|$)/.test(event.key)) resume();
         });
         this.boundEvents = true;
       }
@@ -750,7 +774,7 @@
 
     schedule(delay) {
       clearTimeout(this.syncTimer);
-      if (document.hidden || this.paused || (!this.liveOnly && !this.isLive)) return;
+      if (!this.active || document.hidden || this.paused || (!this.liveOnly && !this.isLive)) return;
       this.syncTimer = setTimeout(() => this.isLive ? this.connectWebSocket() : this.refresh(), delay);
     }
 
@@ -775,9 +799,9 @@
     async readSnapshot() {
       try {
         if (!this.apiBase) throw new Error('请通过 CF-Server-Monitor 站点打开主题。');
-        const options = {headers:this.requestHeaders(), cache:'no-store', signal:AbortSignal.timeout(15000)};
+        const options = {headers:this.requestHeaders(), cache:'no-store', credentials:'include', signal:AbortSignal.timeout(15000)};
         const [config, response] = await Promise.all([
-          this.siteConfig || fetch(this.apiBase + '/api/config', options).then(async res => {
+          this.siteConfig || global.farmWorkers?.configFor(this.apiBase) || fetch(this.apiBase + '/api/config', options).then(async res => {
             if (res.status === 403 && options.headers['X-Turnstile-Verified'])
               res = await fetch(this.apiBase + '/api/config', {cache:'no-store', signal:options.signal});
             return res.ok ? res.json() : null;
@@ -785,25 +809,31 @@
           fetch(this.apiBase + '/api/servers', options)
         ]);
         if (config) {
-          this.siteConfig = config;
+          this.siteConfig = {...config};
           const sign = document.querySelector('.site-sign strong');
-          if (sign && config.site_title) sign.textContent = config.site_title;
+          if (!this.apiIndex && sign && config.site_title) sign.textContent = config.site_title;
+          const credit = document.querySelector('.credit-link');
+          if (!this.apiIndex && credit && config.version) credit.title = config.version;
         }
         if (response.status === 401) {
           this.disconnect();
-          global.openMonitorLogin(this.apiBase);
-          return;
+          if (!this.grouped && this.active) return global.openMonitorLogin(this.apiBase);
+          global.farmWorkers?.clearWorkerToken(this.apiBase);
         }
-        if (response.status === 403) {
-          if (this.apiBase === location.origin) localStorage.removeItem('turnstile_verified');
+        if (response.status === 401 || response.status === 403) {
+          if (response.status === 403) {
+            if (global.farmWorkers) global.farmWorkers.clearWorkerProof(this.apiBase);
+            else if (this.apiBase === location.origin) localStorage.removeItem('turnstile_verified');
+          }
           if (this.siteConfig) this.siteConfig.verified = false;
           this.disconnect();
           this.isLive = false;
           this.rawServers = [];
           this.currentNodes = [];
           this.currentStats = {realtime:'—', realtimeUnit:'', realtimeDetail:'', total:'—', online:'—', offline:'—'};
-          global.updateStats?.(this.currentStats);
+          if (!this.grouped) global.updateStats?.(this.currentStats);
           this.connection = 'auth';
+          this.accessConfig = response.status === 401 ? {...this.siteConfig, turnstile_enabled:false} : this.siteConfig;
           this.lastError = new Error('监控接口要求登录或访问验证。');
           this.notify();
           return;
@@ -832,9 +862,10 @@
         if (payload.stats && !replay.updated) this.updateStatsFromPayload(payload.stats);
         else this.updateStatsFromNodes();
         this.isLive = true;
+        this.accessConfig = null;
         this.lastError = null;
         if (!this.paused) this.connection = 'ready';
-        if (!document.hidden && !this.paused) this.connectWebSocket();
+        if (this.active && !document.hidden && !this.paused) this.connectWebSocket();
         this.notify();
       } catch (error) {
         this.lastError = error;
@@ -881,7 +912,7 @@
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       url.pathname = '/api/ws';
       url.searchParams.set('subscribe', 'all');
-      const token = localStorage.getItem(STORAGE_KEYS.JWT);
+      const token = global.farmWorkers ? global.farmWorkers.workerToken(this.apiBase) : localStorage.getItem(STORAGE_KEYS.JWT);
       if (token && url.host !== location.host) url.searchParams.set('token', token);
       const ws = new WebSocket(url);
       this.ws = ws;
@@ -926,11 +957,52 @@
     }
   }
 
-  // 单例导出
-  const adapter = new CFServerMonitorAdapter();
+  class MultiWorkerMonitor extends CFServerMonitorAdapter {
+    constructor(bases) {
+      super(bases[0]);
+      this.workers = bases.map((base, index) => new CFServerMonitorAdapter(base, index, true));
+      this.workers.forEach(worker => worker.subscribe(() => this.collect()));
+    }
+
+    activate() { return Promise.all(this.workers.map(worker => worker.activate())); }
+    deactivate() { this.workers.forEach(worker => worker.deactivate()); }
+    init() { return Promise.all(this.workers.map(worker => worker.init())); }
+
+    collect() {
+      const ready = this.workers.filter(worker => worker.isLive);
+      this.currentNodes = ready.flatMap(worker => worker.getNodes());
+      const access = this.workers.find(worker => worker.connection === 'auth') ||
+        this.workers.find(worker => ['paused', 'stale', 'retry'].includes(worker.connection));
+      this.accessWorker = access || null;
+      this.siteConfig = this.workers[0].siteConfig;
+      this.connection = access?.connection ?? (ready.length ? 'ready' : 'loading');
+      this.isLive = ready.length > 0;
+      this.lastError = access?.lastError;
+      const sum = select => ready.reduce((total, worker) => total + Number(select(worker) || 0), 0);
+      const rate = key => ready.length && ready.every(worker => worker.rates?.[key] != null)
+        ? sum(worker => worker.rates[key]) : null;
+      this.updateStatsFromPayload({
+        globalSpeedIn: rate('globalSpeedIn'), globalSpeedOut: rate('globalSpeedOut'),
+        ...Object.fromEntries(['total', 'online', 'offline'].map(key => [key,
+          ready.length ? sum(worker => worker.currentStats[key]) : '—']))
+      });
+      this.notify();
+    }
+
+    setBuildingOverride(nodeId, building) {
+      const node = this.currentNodes.find(item => item.rawId === nodeId);
+      if (!node) return;
+      const worker = this.workers[node.apiIndex];
+      worker.buildingOverrides = loadBuildingOverrides();
+      worker.setBuildingOverride(nodeId, building);
+    }
+  }
+
+  const bases = global.farmWorkers?.apiBases || [];
+  const adapter = bases.length > 1 ? new MultiWorkerMonitor(bases) : new CFServerMonitorAdapter(bases[0]);
   global.CFSMAdapter = CFServerMonitorAdapter;
   global.cfsmAdapter = adapter;
-  if (location.hash.startsWith('#/server/')) return;
+  if (document.documentElement.dataset.farmSpa !== undefined || location.hash.startsWith('#/server/')) return;
 
   // 延迟启动，避免阻塞页面核心骨架绘制
   if (document.readyState === 'loading') {

@@ -76,7 +76,7 @@ function resolveHeroSource(seasonKey, isNight) {
   if (nativeFarm) {
     const season = Object.hasOwn(farmCrops, seasonKey) ? seasonKey : 'spring';
     return {
-      src: farmAsset(`../../assets/landscape/native-spring-estate/${season}-${isNight ? 'night' : 'day'}.png`),
+      src: farmAsset(`../../assets/landscape/native-spring-estate/${season}-${isNight ? 'night' : 'day'}.${window.farmImageExtension || 'png'}`),
       alt: nodeText('{scene}农场，主宅、水井和两片祝尼魔农田位于画面中央，{crops}', {scene:nodeText(seasonNames[season]+(isNight ? '夜' : '日')),crops:nodeText(farmCrops[season])})
     };
   }
@@ -99,7 +99,9 @@ window.restoreDetailScene = scene => {
   syncSceneCopy();
 };
 let currentTime;
+let homeVisible = true;
 function syncSceneCopy() {
+  if (!homeVisible) return;
   for (const el of document.querySelectorAll('[data-report]')) el.textContent = reportText(Number(el.dataset.report));
   const place = scenePlace();
   currentTime = Core.resolveScene(place);
@@ -132,7 +134,7 @@ function updateModularFooter(seasonKey, postcardRoot, isNight) {
   for (const [selector, side] of [['.flora-img', 'left'], ['.fence-img', 'right']]) {
     const img = document.querySelector(selector);
     if (img && nativeFarm) {
-      const src = farmAsset(`../../assets/landscape/native-spring-estate/footer/${validSeason}-${isNight ? 'night' : 'day'}-${side}.png`);
+      const src = farmAsset(`../../assets/landscape/native-spring-estate/footer/${validSeason}-${isNight ? 'night' : 'day'}-${side}.${window.farmImageExtension || 'png'}`);
       if (img.getAttribute('src') !== src) img.src = src;
       continue;
     }
@@ -199,3 +201,7 @@ syncSceneCopy();
 if (seasonSelect.value === 'auto') locateVisitor();
 const clockTimer = setInterval(syncSceneCopy, 10000);
 if (typeof clockTimer.unref === 'function') clockTimer.unref();
+window.addEventListener('farm-home-visibility', event => {
+  homeVisible = event.detail;
+  if (homeVisible) syncSceneCopy();
+});

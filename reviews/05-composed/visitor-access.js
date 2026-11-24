@@ -2,7 +2,8 @@
   const t = message => window.farmText?.(message) || message;
   let loader;
   window.openMonitorLogin = apiBase => {
-    localStorage.removeItem('jwt_token');
+    if (window.farmWorkers) window.farmWorkers.clearWorkerToken(apiBase);
+    else localStorage.removeItem('jwt_token');
     location.assign(new URL('/admin#/admin', apiBase));
   };
   function loadChallenge() {
@@ -21,7 +22,7 @@
     if (!panel) return;
     const verify = state === 'auth' && [true, 'true', 1].includes(config?.turnstile_enabled)
       && config.turnstile_site_key && config.verified !== true;
-    const key = [state, verify && config.turnstile_site_key, window.farmLocale].join('|');
+    const key = [state, apiBase, verify && config.turnstile_site_key, window.farmLocale].join('|');
     if (panel.dataset.access === key) return;
     if (panel.widgetId != null) window.turnstile.remove(panel.widgetId);
     panel.widgetId = null;
@@ -69,11 +70,14 @@
           sitekey:config.turnstile_site_key, size:'flexible',
           callback:async token => {
             try {
-              const res = await fetch(apiBase + '/api/config', {headers:{'X-Turnstile-Token':token}, cache:'no-store', signal:AbortSignal.timeout(15000)});
+              const headers = {...window.farmWorkers?.workerHeaders(apiBase), 'X-Turnstile-Token':token};
+              delete headers['X-Turnstile-Verified'];
+              const res = await fetch(apiBase + '/api/config', {headers, credentials:'include', cache:'no-store', signal:AbortSignal.timeout(15000)});
               const result = res.ok && await res.json();
               if (!host.isConnected) return;
               if (result.verified !== true) return failed();
-              if (result.turnstile_verified && new URL(apiBase).origin === location.origin)
+              if (window.farmWorkers) window.farmWorkers.rememberWorkerProof(apiBase, result.turnstile_verified);
+              else if (result.turnstile_verified && new URL(apiBase).origin === location.origin)
                 localStorage.setItem('turnstile_verified', result.turnstile_verified);
               button.disabled = false;
               await retry();

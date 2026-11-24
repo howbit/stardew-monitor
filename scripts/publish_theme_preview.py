@@ -64,7 +64,7 @@ def publish(package, remote):
 
         with ZipFile(package) as archive:
             names = archive.namelist()
-            if 'index.html' not in names or 'assets/app/detail-route.js' not in names:
+            if 'index.html' not in names or not any(re.fullmatch(r'assets/app/app-[\w-]+\.js', n) for n in names):
                 raise ValueError('Package is missing a theme entry point')
             for name in names:
                 if name != 'index.html' and not re.fullmatch(r'assets/(?:app|landscape|music|stats|ui)/[\w./-]+', name):

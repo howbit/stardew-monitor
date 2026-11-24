@@ -99,7 +99,7 @@
   window.farmText = t;
   window.farmLocale = language;
 
-  document.addEventListener('DOMContentLoaded', () => {
+  window.bindFarmLanguage = () => {
     const select = document.querySelector('#theme-language');
     if (!select) return;
     select.value = language;
@@ -115,5 +115,8 @@
         if (el.hasAttribute(attr)) el.setAttribute(attr,t(el.getAttribute(attr)));
       }
     }
-  });
+  };
+  if (document.documentElement.dataset.farmSpa === undefined) {
+    document.addEventListener('DOMContentLoaded', window.bindFarmLanguage);
+  }
 })();

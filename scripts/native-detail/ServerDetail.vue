@@ -413,8 +413,7 @@ import { ref, computed, inject, onMounted, onUnmounted, watch, nextTick, h } fro
 import { useRoute, useRouter } from 'vue-router'
 import Footer from '@cfsm/components/Footer.vue'
 import LiveConnectionTimeoutModal from '@cfsm/components/LiveConnectionTimeoutModal.vue'
-import { fetchAllHistory, formatBytes as formatKnownBytes, createLiveSocket, getFlagRegionCode, isServerOnline, normalizeLiveSocketTimeoutMinutes } from '@cfsm/utils/api.js'
-import { http, DEFAULT_REQUEST_TIMEOUT_MS, isAdminLoggedIn } from '@cfsm/utils/http'
+import { formatBytes as formatKnownBytes, createLiveSocket, getFlagRegionCode, isServerOnline, normalizeLiveSocketTimeoutMinutes } from '@cfsm/utils/api.js'
 import { getTrafficUsageBytes } from '@cfsm/composables/useServerCardData'
 import { getApiBases } from '@cfsm/utils/config.js'
 import { getOSImage, getOSName } from '@cfsm/utils/osIcon.js'
@@ -425,18 +424,22 @@ import { formatDateTime, normalizeTimestamp as normalizeMetricTimestamp } from '
 import {onFarmThemeChange} from './detail-theme.js'
 import { isDisabledProbeMetric } from '@cfsm/utils/server.js'
 import { resolvePlaybackCursor } from '@cfsm/utils/playback.js'
+import { requestWorker, workerHistory, workerToken } from './monitor-runtime.js'
 
 const route = useRoute()
 const router = useRouter()
+const emit = defineEmits(['reauth'])
 const appConfig = inject('appConfig', null)
 const initialServer = inject('initialServer')
-const adminOrigin = getApiBases()[0]
+const adminOrigin = getApiBases()[Number(route.query.apiIndex)] || getApiBases()[0]
 const adminHref = (adminOrigin === location.origin ? '' : adminOrigin) + '/admin#/admin'
 const adminLabel = window.farmText('管理后台')
 const demoHistory = inject('demoHistory', null)
 const isShown = key => ![false, 0, '0', 'false'].includes(initialServer.sysConfig?.[key] ?? appConfig?.[key])
 const historyMessage = ref('')
 let historyRequest = 0
+let disposed = false
+let chartTimer
 
 let serverId = route.params.id
 if (!serverId) {
@@ -1385,7 +1388,7 @@ const clearDiskIoChart = () => {
 const loadAllHistory = async (hours) => {
   const request = ++historyRequest
   try {
-    const allData = demoHistory ? demoHistory(hours) : await fetchAllHistory(String(encodeURIComponent(serverId)), hours, apiIndex.value)
+    const allData = demoHistory ? demoHistory(hours) : await workerHistory(adminOrigin, serverId, hours)
     if (request !== historyRequest) return
     historyMessage.value = allData.length ? '' : trans.value.noData
     if (!allData.length) {
@@ -1832,7 +1835,7 @@ const fetchCurrentStatus = async (incomingData, options = {}) => {
 
 const setTimeRange = (hours) => {
   clearLatestReportReplayTimers()
-  if (hours > 24 && !isAdminLoggedIn()) {
+  if (hours > 24 && !workerToken(adminOrigin)) {
     showLoginModal.value = true
     return
   }
@@ -1852,7 +1855,7 @@ let liveSocket = null
 let liveConnectionClosedByUser = false
 
 const initChartsOnMount = async () => {
-  if (isInitializingCharts || chartsReady.value) return
+  if (disposed || isInitializingCharts || chartsReady.value) return
   isInitializingCharts = true
 
   await nextTick()
@@ -1869,11 +1872,11 @@ const initChartsOnMount = async () => {
     }
   } else {
     isInitializingCharts = false
-    setTimeout(initChartsOnMount, 30)
+    chartTimer = setTimeout(initChartsOnMount, 30)
   }
 }
 
-const handleVisibility = () => {
+const handleVisibility = async () => {
   if (!liveSocket) return
   if (document.hidden) {
     clearLatestReportReplayTimers()
@@ -1881,7 +1884,16 @@ const handleVisibility = () => {
   } else if (showLiveTimeoutModal.value || liveConnectionClosedByUser) {
     return
   } else {
-    liveSocket.reconnect()
+    try {
+      const response = await requestWorker(adminOrigin, '/api/server?id=' + encodeURIComponent(serverId))
+      if (disposed || document.hidden) return
+      if ([401, 403].includes(response.status)) return emit('reauth')
+      if (response.ok) {
+        const snapshot = await response.json()
+        if (!disposed && String(snapshot?.id) === String(serverId)) await fetchCurrentStatus(snapshot)
+      }
+    } catch {}
+    if (!disposed && !document.hidden) liveSocket.reconnect()
   }
 }
 
@@ -1912,11 +1924,7 @@ const handleLiveMessage = (msg) => {
 }
 
 const getInjectedRuntimeConfig = () => {
-  if (!appConfig) return null
-  if (Array.isArray(appConfig.site_configs) && appConfig.site_configs[apiIndex.value]) {
-    return appConfig.site_configs[apiIndex.value]
-  }
-  return apiIndex.value === 0 ? appConfig : null
+  return appConfig
 }
 
 const loadThemeOptionsFromConfig = async () => {
@@ -1936,32 +1944,21 @@ const init = async () => {
   await initChartsOnMount()
 
   await loadAllHistory(currentHours.value)
+  if (disposed) return
   replayLatestReportUpdates(initialData)
   if (demoHistory) return
 
   liveSocket = createLiveSocket(String(serverId), {
+    authToken: () => workerToken(adminOrigin),
     replay: false,
     timeoutMinutes: frontendWsTimeoutMinutes.value,
     onMessage: handleLiveMessage,
     onTimeout: () => {
       showLiveTimeoutModal.value = true
     },
-    onStatus: async ({connected}) => {
+    onStatus: ({connected}) => {
       if (document.hidden || showLiveTimeoutModal.value || liveConnectionClosedByUser) return
-      if (!connected) {
-        connectionInterrupted.value = true
-        return
-      }
-      if (!connectionInterrupted.value) return
-      const snapshot = await http.getByIndex('/api/server?id=' + encodeURIComponent(serverId), apiIndex.value,
-        {autoRedirect:false, timeoutMs:DEFAULT_REQUEST_TIMEOUT_MS}).catch(() => null)
-      if ([401,403,404].includes(snapshot?.status)) return location.reload()
-      if (String(snapshot?.data?.id) !== String(serverId)) return
-      if (connectionInterrupted.value) {
-        server.value = snapshot.data
-        lastUpdateText.value = formatTimestamp(snapshot.data.last_updated)
-        connectionInterrupted.value = false
-      }
+      connectionInterrupted.value = !connected
     }
   }, apiIndex.value)
 
@@ -1979,6 +1976,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  disposed = true
+  historyRequest += 1
+  clearTimeout(chartTimer)
   document.removeEventListener('visibilitychange', handleVisibility)
   if (liveSocket) liveSocket.close()
   clearLatestReportReplayTimers()

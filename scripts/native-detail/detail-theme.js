@@ -11,14 +11,14 @@ function refresh() {
   listeners.forEach(callback => callback())
 }
 
-export function initFarmTheme(home) {
+export function initFarmTheme() {
   const origin = JSON.parse(sessionStorage.getItem('farm-detail-origin') || 'null')
-  const scene = origin?.hash === location.hash && origin.page === home.pathname + home.search ? origin.scene : null
+  const scene = origin?.hash === location.hash ? origin.scene : null
   place = scene?.place ?? window.estateStart.visitor
   override = scene ? scene.phaseOverride : (window.estateStart.demo ? window.estateStart.night : null)
   refresh()
-  window.setInterval(refresh, 30000)
-  window.addEventListener('pageshow', refresh)
+  const timer = window.setInterval(refresh, 30000)
+  return () => window.clearInterval(timer)
 }
 
 export function onFarmThemeChange(callback) {

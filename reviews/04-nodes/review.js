@@ -161,8 +161,8 @@ const systemLogos = [
   [/euleros|huawei/i,'os-huawei.svg'], [/orange\s?pi/i,'os-orange-pi.svg'], [/qnap|\bqts\b/i,'os-qnap.svg'], [/unraid/i,'os-unraid.svg']
 ];
 
-function workerAsset(path) {
-  const base = window.cfsmAdapter?.apiBase;
+function workerAsset(path, node) {
+  const base = node.apiBase || window.cfsmAdapter?.apiBase;
   return base && base !== location.origin ? new URL(path, base).href : path;
 }
 
@@ -171,7 +171,7 @@ function systemBadge(node, detailUrl) {
   if (!os || os === '—' || os === 'N/A') return '';
   const file = systemLogos.find(([match]) => match.test(os))?.[1];
   const fallback = '../../assets/ui/lucide/hard-drive.svg';
-  const src = file ? workerAsset('../../assets/ui/os-icons/' + file) : window.farmAsset?.(fallback) ?? fallback;
+  const src = file ? workerAsset('../../assets/ui/os-icons/' + file, node) : window.farmAsset?.(fallback) ?? fallback;
   return '<a class="system-badge" href="'+detailUrl+'" title="'+escapeText(os)+'" aria-label="'+nodeText('查看系统版本')+' '+escapeText(os)+'">'+
     '<img src="'+src+'" width="18" height="18" alt=""></a>';
 }
@@ -247,7 +247,7 @@ function sampleStrip(points, stamp, value, loss, hours) {
 
 function renderProbeRows(node, charts, selected) {
   const names = {CT:'电信',CU:'联通',CM:'移动'};
-  const hours = Number(window.cfsmAdapter?.siteConfig?.latency_window?.hours) || 2;
+  const hours = node.latencyHours || 2;
   return (node.ping || []).map(([label,latency], index) => {
     const data = node.routeData?.[label] || {};
     const delay = node.online ? latency === null ? nodeText('超时') : latency+' ms' : '—';
@@ -346,7 +346,7 @@ function regionFlag(node) {
   if (!/^[A-Z]{2}$/.test(code || '') || !flagNames.of(code)) return '';
   const name = flagNames.of(code);
   const title = [name, nodeText(node.city)].filter((value,index,all) => value && all.indexOf(value) === index).join(' · ');
-  const base = window.cfsmAdapter?.isLive || !node.demo ? workerAsset('/flags/') : '../../assets/ui/demo-flags/';
+  const base = window.cfsmAdapter?.isLive || !node.demo ? workerAsset('/flags/', node) : '../../assets/ui/demo-flags/';
   return `<span class="region-flag summary-country" title="${escapeText(title)}"><img alt="${escapeText(name)}" src="${base}${code.toLowerCase()}.svg"></span>`;
 }
 
@@ -401,6 +401,11 @@ function setNodeActions(card, node, warpHost) {
   }
 }
 
+function nodeDetailUrl(node) {
+  const id = encodeURIComponent(node.serverId ?? node.rawId ?? node.id);
+  return '#/server/' + id + (node.apiIndex ? '?apiIndex=' + node.apiIndex : '');
+}
+
 cards.addEventListener('click', event => {
   const card = event.target.closest('article[data-key]');
   if (!card) return;
@@ -421,7 +426,7 @@ cards.addEventListener('click', event => {
     else chosenRoutes.set(node.rawId ?? node.id, label);
     render();
   } else if (!event.target.closest('button,a')) {
-    location.hash = '#/server/' + encodeURIComponent(node.rawId ?? node.id);
+    location.hash = nodeDetailUrl(node);
   }
 });
 
@@ -453,7 +458,11 @@ function syncCardElement(current, next) {
 
 function render(){
   const adapter = window.cfsmAdapter;
-  if (adapter?.liveOnly) window.showMonitorAccess?.(document.getElementById('monitor-access'), adapter.connection, adapter.siteConfig, adapter.apiBase, () => adapter.init());
+  if (adapter?.liveOnly) {
+    const worker = adapter.accessWorker || adapter;
+    window.showMonitorAccess?.(document.getElementById('monitor-access'), worker.connection,
+      worker.accessConfig || worker.siteConfig, worker.apiBase, () => worker.init());
+  }
   syncRegionFilters();
   const search = document.querySelector('#search');
   const q = search ? search.value.trim().toLowerCase() : '';
@@ -498,7 +507,7 @@ function render(){
     }
     shown += 1;
     const card = document.createElement('article');
-    const detailUrl = '#/server/'+encodeURIComponent(node.rawId ?? node.id);
+    const detailUrl = nodeDetailUrl(node);
     if (menuCard && currentView === 'list') {
       card.className = 'server-summary '+(node.online ? 'online' : 'offline');
       card.innerHTML = renderNodeSummary(node, detailUrl);

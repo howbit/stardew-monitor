@@ -34,8 +34,8 @@ class PublishTest(unittest.TestCase):
                 git('-C', checkout, 'push', '-q', 'origin', 'HEAD:preview')
             def package(include_image):
                 with ZipFile(archive, 'w') as z:
-                    z.writestr('index.html', entry('assets'))
-                    z.writestr('assets/app/detail-route.js', 'route')
+                    z.writestr('index.html', '<script type="module" src="assets/app/app-test.js"></script>')
+                    z.writestr('assets/app/app-test.js', 'route')
                     if include_image:
                         z.writestr('assets/ui/image.png', 'image')
             custom = ['assets/custom/notes.txt', 'assets/stardew-personal/notes.txt', prefix(1) + '/notes.txt']
@@ -43,6 +43,7 @@ class PublishTest(unittest.TestCase):
                 write(path, 'preserve')
             write('index.html', entry(prefix(1)))
             write(prefix(1) + '/app/detail-route.js', 'route')
+            write(prefix(1) + '/app/app-test.js', 'route')
             write(prefix(1) + '/ui/image.png', 'customized')
             write(prefix(2) + '/app/detail-route.js', 'older route')
             write(prefix(2) + '/published-files.json', json.dumps({'app/detail-route.js': git_blob_id(b'older route')}))
@@ -54,10 +55,10 @@ class PublishTest(unittest.TestCase):
             sha = publish(archive, str(remote))
             self.assertEqual(sha, publish(archive, str(remote)))
             files = git('--git-dir', remote, 'ls-tree', '-r', '--name-only', sha).splitlines()
-            for path in custom + [prefix(1) + '/ui/image.png', 'assets/app/detail-route.js', 'assets/published-files.json']:
+            for path in custom + [prefix(1) + '/ui/image.png', 'assets/app/app-test.js', 'assets/published-files.json']:
                 self.assertIn(path, files)
-            for n in (1, 2):
-                self.assertNotIn(prefix(n) + '/app/detail-route.js', files)
+            self.assertNotIn(prefix(1) + '/app/app-test.js', files)
+            self.assertNotIn(prefix(2) + '/app/detail-route.js', files)
             self.assertNotIn('assets/ui/image.png', files)
             git('-C', checkout, 'pull', '--ff-only')
             write('assets/ui/image.png', 'customized')

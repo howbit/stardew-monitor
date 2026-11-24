@@ -105,6 +105,10 @@ body.night{background:var(--night-paper)}
 .stat-value .unit{font-size:9px}
 .flow-breakdown{margin-top:4px;color:#7c705e;font-size:8px;white-space:nowrap}
 
+@media(max-width:360px){
+  .stats .stat.realtime .stat-value strong{font-size:19px}
+}
+
 .content-panel{
   max-width:1440px;
   margin:0 auto;
@@ -532,14 +536,14 @@ body[data-art-scheme="1"] .hero-grass-fringe{
   left:0;
   right:0;
   height:8px;
-  background-image:url("../app/hero-grass-fringe.svg?stardew_v=8b3cc57073b3");
+  background-image:url("../app/hero-grass-fringe.svg?stardew_v=a3a5a590c9a0");
   background-repeat:repeat-x;
   background-size:32px 8px;
   image-rendering:pixelated;
   z-index:4;
 }
 body.night[data-art-scheme="1"] .hero-grass-fringe{
-  background-image:url("../app/hero-grass-fringe-night.svg?stardew_v=8b3cc57073b3");
+  background-image:url("../app/hero-grass-fringe-night.svg?stardew_v=a3a5a590c9a0");
 }
 
 /* 完美解决“下面为什么会这样”：按参考图比例收紧的舒展拥抱底栏 */
@@ -552,7 +556,7 @@ body[data-art-scheme="1"] .seasonal-footer{
   min-height:120px;
   max-height:120px;
   background-color:#fff2d2 !important;
-  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=8b3cc57073b3") !important;
+  background-image:url("../app/seasonal-footer-sprite-v1.png?stardew_v=a3a5a590c9a0") !important;
   background-repeat:no-repeat !important;
   background-size:100% 400% !important;
   border-top:1.5px solid #dfc79e !important;
@@ -569,7 +573,7 @@ body[data-art-scheme="1"][data-season="winter"] .seasonal-footer{background-posi
 
 body.night[data-art-scheme="1"] .seasonal-footer{
   background-color:#0d1a29 !important;
-  background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=8b3cc57073b3") !important;
+  background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=a3a5a590c9a0") !important;
   border-top-color:#1c3349 !important;
   border-bottom-color:#0a1219 !important;
 }
@@ -1399,7 +1403,7 @@ body.night[data-season="winter"]{--night-paper:#0a1725}
 .night .content-heading h1{color:#fff3da}
 .night .content-panel .demo-note{color:#9fb4d0}
 .night .review-caption{color:#9fb4d0}
-body.night[data-season] .monitor-page .seasonal-footer{background-color:var(--night-paper);background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=8b3cc57073b3");filter:none}
+body.night[data-season] .monitor-page .seasonal-footer{background-color:var(--night-paper);background-image:url("../app/seasonal-footer-night-sprite-v4.png?stardew_v=a3a5a590c9a0");filter:none}
 body.night .monitor-page .seasonal-footer:before{
   display:block !important;
   background:linear-gradient(180deg,var(--night-paper) 0%,rgba(11,25,40,0) 100%);
@@ -1420,7 +1424,7 @@ body.night .monitor-page .seasonal-footer:before{
   box-sizing:border-box;
   border-style:solid;
   border-width:8px;
-  border-image-source:url("../app/card-frame-day.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-day.png?stardew_v=a3a5a590c9a0");
   border-image-slice:8 fill;
   border-image-repeat:stretch;
   filter:drop-shadow(0 2px 5px rgba(120,80,30,0.08));
@@ -1432,16 +1436,16 @@ body.night .monitor-page .seasonal-footer:before{
 }
 .monitor-card:hover{
   transform:translateY(-2px);
-  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=a3a5a590c9a0");
   filter:drop-shadow(0 4px 12px rgba(180,120,40,0.22));
 }
 .monitor-card.scene-active{
-  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-day-hover.png?stardew_v=a3a5a590c9a0");
   filter:drop-shadow(0 4px 14px rgba(214,158,64,0.32));
   transform:translateY(-2px);
 }
 .monitor-card.offline{
-  border-image-source:url("../app/card-frame-offline.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-offline.png?stardew_v=a3a5a590c9a0");
   filter:drop-shadow(0 2px 4px rgba(0,0,0,0.04));
 }
 
@@ -1992,19 +1996,19 @@ body.night .monitor-page .seasonal-footer:before{
    夜间模式组件深度调色 (月夜冷杉蓝调)
    ======================================================== */
 .night .monitor-card{
-  border-image-source:url("../app/card-frame-night.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-night.png?stardew_v=a3a5a590c9a0");
   filter:drop-shadow(0 3px 8px rgba(0,0,0,0.4));
 }
 .night .monitor-card:hover{
-  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=a3a5a590c9a0");
   filter:drop-shadow(0 5px 14px rgba(84,138,191,0.35));
 }
 .night .monitor-card.scene-active{
-  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-night-hover.png?stardew_v=a3a5a590c9a0");
   filter:drop-shadow(0 5px 16px rgba(244,194,100,0.35));
 }
 .night .monitor-card.offline{
-  border-image-source:url("../app/card-frame-offline-night.png?stardew_v=8b3cc57073b3");
+  border-image-source:url("../app/card-frame-offline-night.png?stardew_v=a3a5a590c9a0");
   filter:drop-shadow(0 2px 5px rgba(0,0,0,0.3));
 }
 .night .monitor-card .node-city,
